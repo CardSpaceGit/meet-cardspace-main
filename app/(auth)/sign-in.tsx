@@ -5,6 +5,9 @@ import React from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { useOAuth } from '@clerk/clerk-expo';
 import { InputField } from '@/components/ui/InputField';
+import { Fonts } from '@/constants/Fonts';
+import { GoogleButton } from '@/components/ui/GoogleButton';
+import { AppleButton } from '@/components/ui/AppleButton';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -93,22 +96,20 @@ export default function SignInScreen() {
       <Text style={styles.title}>Sign In</Text>
       
       <View style={styles.oauthContainer}>
-        <TouchableOpacity 
-          style={styles.oauthButton} 
+        <GoogleButton 
           onPress={onGooglePress}
           disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
-        >
-          <Text style={styles.oauthButtonText}>Continue with Google</Text>
-        </TouchableOpacity>
+          loading={oauthLoading}
+          fullWidth
+        />
         
         {Platform.OS === 'ios' && (
-          <TouchableOpacity 
-            style={[styles.oauthButton, { backgroundColor: '#000' }]} 
+          <AppleButton 
             onPress={onApplePress}
             disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
-          >
-            <Text style={styles.oauthButtonText}>Continue with Apple</Text>
-          </TouchableOpacity>
+            loading={oauthLoading}
+            fullWidth
+          />
         )}
         
         <View style={styles.divider}>
@@ -169,8 +170,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...Fonts.title,
     marginBottom: 30,
     textAlign: 'center',
   },
@@ -187,8 +187,8 @@ const styles = StyleSheet.create({
   },
   oauthButtonText: {
     color: '#fff',
+    ...Fonts.bold,
     fontSize: 16,
-    fontWeight: '600',
   },
   divider: {
     flexDirection: 'row',
@@ -203,18 +203,10 @@ const styles = StyleSheet.create({
   dividerText: {
     marginHorizontal: 10,
     color: '#666',
+    ...Fonts.regular,
   },
   inputContainer: {
     marginBottom: 20,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    fontSize: 16,
   },
   button: {
     backgroundColor: '#6c47ff',
@@ -226,8 +218,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
+    ...Fonts.bold,
     fontSize: 16,
-    fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
@@ -237,9 +229,11 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#666',
     marginRight: 5,
+    ...Fonts.regular,
   },
   footerLink: {
     color: '#6c47ff',
-    fontWeight: '600',
+    ...Fonts.bold,
+    fontSize: 16,
   },
 }); 

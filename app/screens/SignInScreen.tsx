@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useSignIn } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { RedirectIfAuthenticated } from '../utils/authUtils';
 import { ENV } from '../config/env';
+import { InputField } from '@/components/ui/InputField';
+import { Fonts } from '@/constants/Fonts';
 
 export default function SignInScreenWrapper() {
   return (
@@ -103,9 +105,9 @@ function SignInScreen() {
       <Text style={styles.title}>Sign In</Text>
       
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
+        <InputField
+          label="Email"
+          placeholder="your@email.com"
           value={emailAddress}
           onChangeText={setEmailAddress}
           keyboardType="email-address"
@@ -165,22 +167,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...Fonts.title,
     marginBottom: 30,
     textAlign: 'center',
   },
   inputContainer: {
     marginBottom: 20,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    fontSize: 16,
   },
   button: {
     backgroundColor: '#6c47ff',
@@ -198,8 +190,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
+    ...Fonts.bold,
     fontSize: 16,
-    fontWeight: '600',
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -214,6 +206,7 @@ const styles = StyleSheet.create({
   dividerText: {
     paddingHorizontal: 15,
     color: '#666',
+    ...Fonts.regular,
   },
   footer: {
     flexDirection: 'row',
@@ -223,9 +216,11 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#666',
     marginRight: 5,
+    ...Fonts.regular,
   },
   footerLink: {
     color: '#6c47ff',
-    fontWeight: '600',
+    ...Fonts.bold,
+    fontSize: 16,
   },
 }); 

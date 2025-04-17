@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Fonts } from '@/constants/Fonts';
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -9,7 +10,7 @@ export default function SplashScreen() {
     // Navigate to sign-in page after 4000ms
     const timer = setTimeout(() => {
       router.replace('/sign-in');
-    }, 4000);
+    }, 8000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -49,14 +50,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 40,
-    fontWeight: 'bold',
     color: '#6c47ff',
     textAlign: 'center',
+    ...Fonts.bold,
   },
   subtitle: {
     fontSize: 40,
     color: '#c075ff',
     textAlign: 'center',
+    ...Fonts.regular,
   },
   footer: {
     position: 'absolute',
@@ -69,11 +71,12 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     marginBottom: 20,
-    fontStyle: 'italic',
+    ...Fonts.italic,
   },
   copyright: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
+    ...Fonts.regular,
   },
 }); 

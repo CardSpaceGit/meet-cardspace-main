@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } fr
 import { useSignIn, useSignUp } from '@clerk/clerk-expo';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { InputField } from '@/components/ui/InputField';
+import { Fonts } from '@/constants/Fonts';
 
 export default function VerifyScreen() {
   const { signIn } = useSignIn();
@@ -144,12 +145,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...Fonts.title,
     marginBottom: 20,
     textAlign: 'center',
   },
   subtitle: {
+    ...Fonts.regular,
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
@@ -157,15 +158,6 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 20,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    fontSize: 16,
   },
   button: {
     backgroundColor: '#6c47ff',
@@ -177,8 +169,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
+    ...Fonts.bold,
     fontSize: 16,
-    fontWeight: '600',
   },
   resendButton: {
     alignItems: 'center',
@@ -186,6 +178,7 @@ const styles = StyleSheet.create({
   },
   resendButtonText: {
     color: '#6c47ff',
+    ...Fonts.regular,
     fontSize: 16,
   },
   backButton: {
@@ -193,6 +186,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#666',
+    ...Fonts.regular,
     fontSize: 16,
   },
 }); 

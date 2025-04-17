@@ -18,6 +18,12 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
+    // Load Century Gothic fonts
+    'CenturyGothic': require('../assets/fonts/Century Gothic.otf'),
+    'CenturyGothic-Bold': require('../assets/fonts/Century Gothic Bold.otf'),
+    'CenturyGothic-Italic': require('../assets/fonts/Century Gothic Italic.otf'),
+    'CenturyGothic-BoldItalic': require('../assets/fonts/Century Gothic Bold Italic.otf'),
+    // Keep SpaceMono font for backward compatibility
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
