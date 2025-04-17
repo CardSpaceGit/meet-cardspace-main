@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -8,6 +8,7 @@ import { InputField } from '@/components/ui/InputField';
 import { Fonts } from '@/constants/Fonts';
 import { GoogleButton } from '@/components/ui/GoogleButton';
 import { AppleButton } from '@/components/ui/AppleButton';
+import { Theme } from '@/constants/Theme';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -122,128 +123,187 @@ export default function SignUpScreen() {
 
   if (pendingVerification) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Verify your email</Text>
-        
-        <Text style={styles.subtitle}>
-          We've sent a verification code to your email.
-        </Text>
-        
-        <View style={styles.inputContainer}>
-          <InputField
-            value={code}
-            placeholder="Enter verification code"
-            onChangeText={setCode}
-            keyboardType="number-pad"
-          />
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+        >
+          <View style={styles.titleContainer}>
+            <Image 
+              source={require('@/assets/images/cardspace_logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Verify your email</Text>
+            
+            <Text style={styles.subtitle}>
+              We've sent a verification code to your email.
+            </Text>
+          </View>
           
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={onVerifyPress}
-            disabled={!code || loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Verify</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
+          <View style={styles.inputContainer}>
+            <InputField
+              value={code}
+              placeholder="Enter verification code"
+              onChangeText={setCode}
+              keyboardType="number-pad"
+            />
+            
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={onVerifyPress}
+              disabled={!code || loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Verify</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
-      
-      <View style={styles.oauthContainer}>
-        <GoogleButton 
-          onPress={onGooglePress}
-          disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
-          loading={oauthLoading}
-          fullWidth
-        />
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+      >
+        <View style={styles.titleContainer}>
+          <Image 
+            source={require('@/assets/images/cardspace_logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>
+            Sign up for <Text style={styles.highlightText}>CardSpace</Text>
+          </Text>
+          <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
+        </View>
         
-        {Platform.OS === 'ios' && (
-          <AppleButton 
-            onPress={onApplePress}
-            disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+        <View style={styles.oauthContainer}>
+          <GoogleButton 
+            onPress={onGooglePress}
+            disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
             loading={oauthLoading}
             fullWidth
           />
-        )}
-        
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
-        </View>
-      </View>
-      
-      <View style={styles.inputContainer}>
-        <InputField
-          label="Email"
-          autoCapitalize="none"
-          value={emailAddress}
-          placeholder="your@email.com"
-          onChangeText={setEmailAddress}
-          keyboardType="email-address"
-        />
-        
-        <InputField
-          label="Password"
-          value={password}
-          placeholder="Your secure password"
-          secureTextEntry={true}
-          onChangeText={setPassword}
-        />
-        
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={onSignUpPress}
-          disabled={!emailAddress || !password || loading || !isLoaded}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Continue</Text>
+          
+          {Platform.OS === 'ios' && (
+            <AppleButton 
+              onPress={onApplePress}
+              disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+              loading={oauthLoading}
+              fullWidth
+            />
           )}
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account?</Text>
-        <Link href="/sign-in" asChild>
-          <TouchableOpacity>
-            <Text style={styles.footerLink}>Sign In</Text>
+          
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>Or you can also Sign up with your email </Text>
+            <View style={styles.dividerLine} />
+          </View>
+        </View>
+        
+        <View style={styles.inputContainer}>
+          <InputField
+            label="Email"
+            autoCapitalize="none"
+            value={emailAddress}
+            placeholder="your@email.com"
+            onChangeText={setEmailAddress}
+            keyboardType="email-address"
+          />
+          
+          <InputField
+            label="Password"
+            value={password}
+            placeholder="Your secure password"
+            secureTextEntry={true}
+            onChangeText={setPassword}
+          />
+          
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={onSignUpPress}
+            disabled={!emailAddress || !password || loading || !isLoaded}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Continue</Text>
+            )}
           </TouchableOpacity>
-        </Link>
-      </View>
-    </View>
+        </View>
+        
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account?</Text>
+          <Link href="/sign-in" asChild>
+            <TouchableOpacity>
+              <Text style={styles.footerLink}>Sign In</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    gap: 20,
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
   },
   title: {
     ...Fonts.title,
-    marginBottom: 30,
+    fontSize: 28,
+    marginBottom: 8,
     textAlign: 'center',
+    color: Theme.colors.textPrimary,
+    lineHeight: 32,
+  },
+  highlightText: {
+    ...Fonts.title,
+    fontSize: 28,
+    color: Theme.colors.style_06,
   },
   subtitle: {
-    ...Fonts.subtitle,
-    color: '#666',
+    ...Fonts.regular,
+    fontSize: 16,
+    marginBottom: 0,
     textAlign: 'center',
-    marginBottom: 30,
+    color: Theme.colors.textSecondary,
   },
   oauthContainer: {
-    marginBottom: 20,
+    marginBottom: 0,
   },
   oauthButton: {
     backgroundColor: '#4285F4',
@@ -274,7 +334,8 @@ const styles = StyleSheet.create({
     ...Fonts.regular,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 0,
+    rowGap: 4,
   },
   button: {
     backgroundColor: '#6c47ff',
@@ -282,7 +343,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 0,
   },
   buttonText: {
     color: '#fff',
@@ -292,16 +353,18 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 0,
+    marginBottom: 20,
   },
   footerText: {
     color: '#666',
     marginRight: 5,
     ...Fonts.regular,
+    fontSize: 14,
   },
   footerLink: {
     color: '#6c47ff',
     ...Fonts.bold,
-    fontSize: 16,
+    fontSize: 14,
   },
 }); 

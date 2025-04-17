@@ -1,6 +1,6 @@
 import { useSignIn } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
-import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView } from 'react-native';
 import React from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { useOAuth } from '@clerk/clerk-expo';
@@ -93,91 +93,115 @@ export default function SignInScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>
-          Welcome to <Text style={styles.highlightText}>CardSpace</Text>
-        </Text>
-        <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
-      </View>
-      
-      <View style={styles.oauthContainer}>
-        <GoogleButton 
-          onPress={onGooglePress}
-          disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
-          loading={oauthLoading}
-          fullWidth
-        />
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+      >
+        <View style={styles.titleContainer}>
+          <Image 
+            source={require('@/assets/images/cardspace_logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>
+            Welcome to <Text style={styles.highlightText}>CardSpace</Text>
+          </Text>
+          <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
+        </View>
         
-        {Platform.OS === 'ios' && (
-          <AppleButton 
-            onPress={onApplePress}
-            disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+        <View style={styles.oauthContainer}>
+          <GoogleButton 
+            onPress={onGooglePress}
+            disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
             loading={oauthLoading}
             fullWidth
           />
-        )}
-        
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>Or you can also Sign up with your email </Text>
-          <View style={styles.dividerLine} />
-        </View>
-      </View>
-      
-      <View style={styles.inputContainer}>
-        <InputField
-          label="Email"
-          autoCapitalize="none"
-          value={emailAddress}
-          placeholder="your@email.com"
-          onChangeText={setEmailAddress}
-          keyboardType="email-address"
-        />
-        
-        <InputField
-          label="Password"
-          value={password}
-          placeholder="Your password"
-          secureTextEntry={true}
-          onChangeText={setPassword}
-        />
-        
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={onSignInPress}
-          disabled={!emailAddress || !password || loading || !isLoaded}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Continue</Text>
+          
+          {Platform.OS === 'ios' && (
+            <AppleButton 
+              onPress={onApplePress}
+              disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+              loading={oauthLoading}
+              fullWidth
+            />
           )}
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account?</Text>
-        <Link href="/sign-up" asChild>
-          <TouchableOpacity>
-            <Text style={styles.footerLink}>Sign Up</Text>
+          
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>Or you can also Sign in with your email </Text>
+            <View style={styles.dividerLine} />
+          </View>
+        </View>
+        
+        <View style={styles.inputContainer}>
+          <InputField
+            label="Email"
+            autoCapitalize="none"
+            value={emailAddress}
+            placeholder="your@email.com"
+            onChangeText={setEmailAddress}
+            keyboardType="email-address"
+          />
+          
+          <InputField
+            label="Password"
+            value={password}
+            placeholder="Your password"
+            secureTextEntry={true}
+            onChangeText={setPassword}
+          />
+          
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={onSignInPress}
+            disabled={!emailAddress || !password || loading || !isLoaded}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Continue</Text>
+            )}
           </TouchableOpacity>
-        </Link>
-      </View>
-    </View>
+        </View>
+        
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account?</Text>
+          <Link href="/sign-up" asChild>
+            <TouchableOpacity>
+              <Text style={styles.footerLink}>Sign Up</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
     justifyContent: 'center',
-    backgroundColor: '#fff',
     gap: 20,
   },
   titleContainer: {
+    alignItems: 'center',
     marginBottom: 10,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
   },
   title: {
     ...Fonts.title,
@@ -185,7 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
     color: Theme.colors.textPrimary,
-    lineHeight: 24,
+    lineHeight: 32,
   },
   highlightText: {
     ...Fonts.title,
@@ -200,15 +224,16 @@ const styles = StyleSheet.create({
     color: Theme.colors.textSecondary,
   },
   oauthContainer: {
-    marginBottom: 20,
+    marginBottom: 0,
+    rowGap: 0,
   },
   oauthButton: {
     backgroundColor: '#4285F4',
     height: 50,
-    borderRadius: 8,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 16,
   },
   oauthButtonText: {
     color: '#fff',
@@ -232,6 +257,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 0,
+    rowGap: 4,
   },
   button: {
     backgroundColor: '#6c47ff',
@@ -243,8 +269,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    ...Fonts.bold,
-    fontSize: 16,
+    ...Fonts.regular,
+    fontSize: 14,
   },
   footer: {
     flexDirection: 'row',
@@ -255,10 +281,11 @@ const styles = StyleSheet.create({
     color: '#666',
     marginRight: 5,
     ...Fonts.regular,
+    fontSize: 14,
   },
   footerLink: {
     color: '#6c47ff',
     ...Fonts.bold,
-    fontSize: 16,
+    fontSize: 14,
   },
 }); 
