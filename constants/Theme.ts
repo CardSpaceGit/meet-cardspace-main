@@ -54,7 +54,7 @@ export const Theme = {
       backgroundColor: ColorPalette.white,
       textColor: ColorPalette.textPrimary,
       placeholderColor: ColorPalette.textSecondary,
-      borderColor: ColorPalette.style_03,
+      borderColor: ColorPalette.textPrimary,
       labelColor: ColorPalette.textPrimary,
       errorColor: ColorPalette.style_05,
     },

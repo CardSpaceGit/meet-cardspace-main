@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 6,
     ...Fonts.regular,
+    borderColor: ColorPalette.style_05,
   },
   outlinedLabel: {
     position: 'absolute',

@@ -8,6 +8,7 @@ import { InputField } from '@/components/ui/InputField';
 import { Fonts } from '@/constants/Fonts';
 import { GoogleButton } from '@/components/ui/GoogleButton';
 import { AppleButton } from '@/components/ui/AppleButton';
+import { Theme } from '@/constants/Theme';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -93,7 +94,12 @@ export default function SignInScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign In</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>
+          Welcome to <Text style={styles.highlightText}>CardSpace</Text>
+        </Text>
+        <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
+      </View>
       
       <View style={styles.oauthContainer}>
         <GoogleButton 
@@ -114,7 +120,7 @@ export default function SignInScreen() {
         
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
+          <Text style={styles.dividerText}>Or you can also Sign up with your email </Text>
           <View style={styles.dividerLine} />
         </View>
       </View>
@@ -168,11 +174,30 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     backgroundColor: '#fff',
+    gap: 20,
+  },
+  titleContainer: {
+    marginBottom: 10,
   },
   title: {
     ...Fonts.title,
-    marginBottom: 30,
+    fontSize: 28,
+    marginBottom: 8,
     textAlign: 'center',
+    color: Theme.colors.textPrimary,
+    lineHeight: 24,
+  },
+  highlightText: {
+    ...Fonts.title,
+    fontSize: 28,
+    color: Theme.colors.style_06,
+  },
+  subtitle: {
+    ...Fonts.regular,
+    fontSize: 16,
+    marginBottom: 0,
+    textAlign: 'center',
+    color: Theme.colors.textSecondary,
   },
   oauthContainer: {
     marginBottom: 20,
@@ -183,7 +208,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 6,
   },
   oauthButtonText: {
     color: '#fff',
@@ -206,7 +231,7 @@ const styles = StyleSheet.create({
     ...Fonts.regular,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 0,
   },
   button: {
     backgroundColor: '#6c47ff',
@@ -214,7 +239,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 0,
   },
   buttonText: {
     color: '#fff',
@@ -224,7 +249,7 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 0,
   },
   footerText: {
     color: '#666',
