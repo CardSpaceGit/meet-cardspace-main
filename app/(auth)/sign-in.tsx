@@ -1,6 +1,6 @@
 import { useSignIn } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
-import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView, ImageBackground } from 'react-native';
+import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView, ImageBackground, Alert } from 'react-native';
 import React from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { useOAuth } from '@clerk/clerk-expo';
@@ -64,14 +64,25 @@ export default function SignInScreen() {
         code: verificationCode,
       });
       
+      console.log("Verification response:", JSON.stringify(result, null, 2));
+      
       if (result.status === 'complete' && result.createdSessionId) {
-        await setActive?.({ session: result.createdSessionId });
-        router.replace('/');
+        try {
+          await setActive?.({ session: result.createdSessionId });
+          router.replace('/');
+        } catch (sessionErr) {
+          console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
+        }
       } else {
-        console.error('Verification failed', result);
+        const status = result.status || 'unknown';
+        console.error(`Verification incomplete. Status: ${status}`);
+        Alert.alert(
+          'Verification Incomplete', 
+          'Your sign-in verification could not be completed. Please try again or contact support.'
+        );
       }
     } catch (err) {
-      console.error('Verification error:', err);
+      console.error("Verification error:", JSON.stringify(err, null, 2));
     } finally {
       setLoading(false);
     }

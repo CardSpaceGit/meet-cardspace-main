@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView, ImageBackground, Alert } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -66,22 +66,33 @@ export default function SignUpScreen() {
         code,
       });
 
+      console.log("Verification response:", JSON.stringify(signUpAttempt, null, 2));
+
       // If verification was completed, set the session to active
       // and redirect the user to onboarding
-      if (signUpAttempt.status === 'complete') {
-        await setActive?.({ session: signUpAttempt.createdSessionId });
-        
-        // Navigate to onboarding in the protected folder
-        router.replace('/onboarding');
+      if (signUpAttempt.status === 'complete' && signUpAttempt.createdSessionId) {
+        try {
+          await setActive?.({ session: signUpAttempt.createdSessionId });
+          
+          // Navigate to onboarding in the protected folder
+          router.replace('/onboarding');
+        } catch (sessionErr) {
+          console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
+        }
       } else {
         // If the status is not complete, check why. User may need to
         // complete further steps.
-        console.error(JSON.stringify(signUpAttempt, null, 2));
+        const status = signUpAttempt.status || 'unknown';
+        console.error(`Verification incomplete. Status: ${status}`);
+        Alert.alert(
+          'Verification Incomplete', 
+          'Your account verification could not be completed. Please try again or contact support.'
+        );
       }
     } catch (err) {
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
+      console.error("Verification error:", JSON.stringify(err, null, 2));
     } finally {
       setLoading(false);
     }

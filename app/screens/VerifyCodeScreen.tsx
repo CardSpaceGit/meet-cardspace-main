@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/Button';
 import { Theme } from '@/constants/Theme';
 
 export default function VerifyCodeScreen() {
-  const { signIn } = useSignIn();
-  const { signUp } = useSignUp();
+  const { signIn, setActive: signInSetActive } = useSignIn();
+  const { signUp, setActive: signUpSetActive } = useSignUp();
   const router = useRouter();
   const params = useLocalSearchParams();
   
@@ -31,9 +31,24 @@ export default function VerifyCodeScreen() {
           code,
         });
         
-        if (completeSignUp.status === 'complete') {
-          // Navigate to the main app after successful verification
-          router.replace('/(tabs)');
+        console.log("Sign-up verification response:", JSON.stringify(completeSignUp, null, 2));
+        
+        if (completeSignUp.status === 'complete' && completeSignUp.createdSessionId) {
+          try {
+            await signUpSetActive?.({ session: completeSignUp.createdSessionId });
+            // Navigate to the main app after successful verification
+            router.replace('/(tabs)');
+          } catch (sessionErr) {
+            console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
+            Alert.alert('Error', 'Unable to activate your session. Please try again.');
+          }
+        } else {
+          const status = completeSignUp.status || 'unknown';
+          console.error(`Verification incomplete. Status: ${status}`);
+          Alert.alert(
+            'Verification Incomplete', 
+            'Your account verification could not be completed. Please try again or contact support.'
+          );
         }
       } else {
         // Verify the code for sign-in
@@ -44,13 +59,28 @@ export default function VerifyCodeScreen() {
           code,
         });
         
-        if (completeSignIn.status === 'complete') {
-          // Navigate to the main app
-          router.replace('/(tabs)');
+        console.log("Sign-in verification response:", JSON.stringify(completeSignIn, null, 2));
+        
+        if (completeSignIn.status === 'complete' && completeSignIn.createdSessionId) {
+          try {
+            await signInSetActive?.({ session: completeSignIn.createdSessionId });
+            // Navigate to the main app
+            router.replace('/(tabs)');
+          } catch (sessionErr) {
+            console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
+            Alert.alert('Error', 'Unable to activate your session. Please try again.');
+          }
+        } else {
+          const status = completeSignIn.status || 'unknown';
+          console.error(`Verification incomplete. Status: ${status}`);
+          Alert.alert(
+            'Verification Incomplete', 
+            'Your sign-in verification could not be completed. Please try again or contact support.'
+          );
         }
       }
     } catch (err: any) {
-      console.error('Verification error', err);
+      console.error('Verification error', JSON.stringify(err, null, 2));
       Alert.alert('Error', err.errors?.[0]?.message || 'Something went wrong');
     } finally {
       setLoading(false);
