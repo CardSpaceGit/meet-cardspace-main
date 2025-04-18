@@ -6,14 +6,30 @@ import { Theme } from '@/constants/Theme';
 export function ButtonExample() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Button Examples</Text>
+      <Text style={styles.title}>CardSpace Buttons</Text>
       
+      <Text style={styles.sectionTitle}>Primary Gradient Buttons</Text>
       <Button 
         title="Primary Button" 
         variant="primary" 
         onPress={() => console.log('Primary button pressed')} 
       />
       
+      <Button 
+        title="Continue" 
+        variant="primary" 
+        fullWidth={true}
+        onPress={() => console.log('Continue pressed')} 
+      />
+      
+      <Button 
+        title="Save Changes" 
+        variant="primary" 
+        size="lg"
+        onPress={() => console.log('Save pressed')} 
+      />
+      
+      <Text style={styles.sectionTitle}>Other Button Variants</Text>
       <Button 
         title="Secondary Button" 
         variant="secondary" 
@@ -37,7 +53,8 @@ export function ButtonExample() {
         variant="success" 
         onPress={() => console.log('Success button pressed')} 
       />
-      
+
+      <Text style={styles.sectionTitle}>Button States</Text>
       <Button 
         title="Loading Button" 
         variant="primary" 
@@ -52,12 +69,33 @@ export function ButtonExample() {
         onPress={() => {}} 
       />
       
-      <Button 
-        title="Full Width Button" 
-        variant="primary" 
-        fullWidth={true} 
-        onPress={() => console.log('Full width button pressed')} 
-      />
+      <Text style={styles.sectionTitle}>Button Sizes</Text>
+      <View style={styles.row}>
+        <View style={styles.column}>
+          <Button 
+            title="Small" 
+            variant="primary" 
+            size="sm"
+            onPress={() => console.log('Small button pressed')} 
+          />
+        </View>
+        <View style={styles.column}>
+          <Button 
+            title="Medium" 
+            variant="primary" 
+            size="md"
+            onPress={() => console.log('Medium button pressed')} 
+          />
+        </View>
+        <View style={styles.column}>
+          <Button 
+            title="Large" 
+            variant="primary" 
+            size="lg"
+            onPress={() => console.log('Large button pressed')} 
+          />
+        </View>
+      </View>
     </View>
   );
 }
@@ -67,9 +105,24 @@ const styles = StyleSheet.create({
     padding: Theme.spacing.md,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: Theme.spacing.md,
+    marginBottom: Theme.spacing.lg,
     textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: Theme.spacing.lg,
+    marginBottom: Theme.spacing.sm,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: -Theme.spacing.xs,
+  },
+  column: {
+    flex: 1,
+    paddingHorizontal: Theme.spacing.xs,
   },
 }); 

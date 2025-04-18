@@ -1,79 +1,200 @@
 import React from 'react';
-import { 
-  TouchableOpacity, 
-  Text, 
-  StyleSheet, 
-  ActivityIndicator, 
-  StyleProp, 
-  ViewStyle, 
-  TextStyle 
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ViewStyle,
+  TextStyle,
+  TouchableOpacityProps,
+  GestureResponderEvent,
+  AccessibilityState,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { ColorPalette } from '@/constants/Colors';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'outline';
+// Define the gradient colors for CardSpace - using from Theme
+const CARDSPACE_GRADIENT_COLORS = Theme.gradients.cardspace;
 
-export type ButtonProps = {
-  onPress: () => void;
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'success'
+  | 'warning'
+  | 'info'
+  | 'outline'
+  | 'gradient';
+
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+// Props for the Button component
+export interface ButtonProps extends TouchableOpacityProps {
   title: string;
   variant?: ButtonVariant;
-  disabled?: boolean;
+  size?: ButtonSize;
   loading?: boolean;
-  style?: StyleProp<ViewStyle>;
-  textStyle?: StyleProp<TextStyle>;
+  disabled?: boolean;
   fullWidth?: boolean;
-};
+  onPress?: ((event: GestureResponderEvent) => void) | undefined;
+  style?: ViewStyle;
+  textStyle?: TextStyle;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+}
 
-export function Button({
-  onPress,
+// Button component
+export const Button: React.FC<ButtonProps> = ({
   title,
   variant = 'primary',
-  disabled = false,
+  size = 'md',
   loading = false,
+  disabled = false,
+  fullWidth = false,
+  onPress,
   style,
   textStyle,
-  fullWidth = false,
-}: ButtonProps) {
+  accessibilityLabel,
+  accessibilityHint,
+  ...props
+}) => {
+  // Get the appropriate button theme based on the variant
   const buttonTheme = Theme.buttons[variant];
   
+  // Set accessibility props
+  const accessibilityState: AccessibilityState = {
+    disabled: disabled || loading,
+    busy: loading,
+  };
+
+  // Render a gradient button if variant is 'gradient' or 'primary'
+  if (variant === 'gradient' || variant === 'primary') {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={loading || disabled ? undefined : onPress}
+        disabled={loading || disabled}
+        style={[
+          styles.container,
+          fullWidth && styles.fullWidth,
+          getSizeStyle(size),
+          disabled && styles.disabledButton,
+          style,
+        ]}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel || title}
+        accessibilityHint={accessibilityHint}
+        accessibilityState={accessibilityState}
+        {...props}
+      >
+        <LinearGradient
+          colors={CARDSPACE_GRADIENT_COLORS}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[
+            styles.gradient,
+            getSizeStyle(size),
+          ]}
+        >
+          {loading ? (
+            <ActivityIndicator color={buttonTheme.textColor} />
+          ) : (
+            <Text
+              style={[
+                styles.text,
+                { color: buttonTheme.textColor },
+                getTextSizeStyle(size),
+                textStyle,
+              ]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {title}
+            </Text>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
+  // Otherwise, render standard button
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={loading || disabled ? undefined : onPress}
       disabled={disabled || loading}
       style={[
         styles.button,
+        getSizeStyle(size),
+        fullWidth && styles.fullWidth,
         {
           backgroundColor: buttonTheme.backgroundColor,
           borderColor: 'borderColor' in buttonTheme ? buttonTheme.borderColor : undefined,
           borderWidth: 'borderWidth' in buttonTheme ? buttonTheme.borderWidth : 0,
           opacity: disabled ? 0.6 : 1,
         },
-        fullWidth && styles.fullWidth,
         style,
       ]}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel || title}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={accessibilityState}
+      {...props}
     >
       {loading ? (
         <ActivityIndicator 
-          color={variant === 'outline' ? ColorPalette.textPrimary : ColorPalette.white} 
-          size="small" 
+          color={buttonTheme.textColor} 
+          size={size === 'sm' ? 'small' : 'large'} 
         />
       ) : (
         <Text 
           style={[
             styles.text,
             { color: buttonTheme.textColor },
+            getTextSizeStyle(size),
             textStyle
           ]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
         >
           {title}
         </Text>
       )}
     </TouchableOpacity>
   );
-}
+};
+
+// Helper functions for getting size-specific styles
+const getSizeStyle = (size: ButtonSize): ViewStyle => {
+  switch (size) {
+    case 'sm':
+      return styles.smallButton;
+    case 'lg':
+      return styles.largeButton;
+    default:
+      return {};
+  }
+};
+
+const getTextSizeStyle = (size: ButtonSize): TextStyle => {
+  switch (size) {
+    case 'sm':
+      return styles.smallText;
+    case 'lg':
+      return styles.largeText;
+    default:
+      return {};
+  }
+};
 
 const styles = StyleSheet.create({
+  container: {
+    marginVertical: Theme.spacing.sm,
+    borderRadius: Theme.borderRadius.round,
+    overflow: 'hidden',
+  },
   button: {
     height: 56,
     borderRadius: Theme.borderRadius.round,
@@ -81,12 +202,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Theme.spacing.lg,
     marginVertical: Theme.spacing.sm,
+    overflow: 'hidden',
   },
   fullWidth: {
     width: '100%',
   },
   text: {
-    fontSize: 16,
+    fontSize: Theme.text.body.fontSize,
     textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  gradient: {
+    width: '100%',
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Theme.spacing.lg,
+  },
+  smallButton: {
+    height: 40,
+    paddingHorizontal: Theme.spacing.md,
+  },
+  largeButton: {
+    height: 64,
+    paddingHorizontal: Theme.spacing.xl,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  smallText: {
+    fontSize: Theme.text.caption.fontSize,
+  },
+  largeText: {
+    fontSize: Theme.text.subheader.fontSize,
   },
 }); 

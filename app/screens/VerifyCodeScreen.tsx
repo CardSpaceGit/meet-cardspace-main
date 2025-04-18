@@ -4,6 +4,8 @@ import { useSignIn, useSignUp } from '@clerk/clerk-expo';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { InputField } from '@/components/ui/InputField';
 import { Fonts } from '@/constants/Fonts';
+import { Button } from '@/components/ui/Button';
+import { Theme } from '@/constants/Theme';
 
 export default function VerifyCodeScreen() {
   const { signIn } = useSignIn();
@@ -102,17 +104,14 @@ export default function VerifyCodeScreen() {
           autoCapitalize="none"
         />
         
-        <TouchableOpacity 
-          style={styles.button} 
+        <Button 
+          title="Verify"
+          variant="primary"
+          fullWidth={true}
+          loading={loading}
           onPress={verifyCode}
           disabled={!code || loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Verify</Text>
-          )}
-        </TouchableOpacity>
+        />
       </View>
       
       <TouchableOpacity 

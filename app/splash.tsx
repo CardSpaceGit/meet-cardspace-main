@@ -10,7 +10,7 @@ export default function SplashScreen() {
     // Navigate to sign-in page after 4000ms
     const timer = setTimeout(() => {
       router.replace('/sign-in');
-    }, 8000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, []);

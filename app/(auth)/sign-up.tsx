@@ -10,6 +10,7 @@ import { GoogleButton } from '@/components/ui/GoogleButton';
 import { AppleButton } from '@/components/ui/AppleButton';
 import { Theme } from '@/constants/Theme';
 import { CodeInput } from '@/components/ui/CodeInput';
+import { Button } from '@/components/ui/Button';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -21,7 +22,6 @@ export default function SignUpScreen() {
   const appleOAuth = useOAuth({ strategy: "oauth_apple" });
 
   const [emailAddress, setEmailAddress] = React.useState('');
-  const [password, setPassword] = React.useState('');
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -29,15 +29,14 @@ export default function SignUpScreen() {
 
   // Handle submission of sign-up form
   const onSignUpPress = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || !signUp) return;
     
     setLoading(true);
     
-    // Start sign-up process using email and password provided
     try {
+      // Start sign-up process using email only
       await signUp.create({
         emailAddress,
-        password,
       });
 
       // Send user an email with verification code
@@ -57,7 +56,7 @@ export default function SignUpScreen() {
 
   // Handle submission of verification form
   const onVerifyPress = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || !signUp) return;
     
     setLoading(true);
     
@@ -70,7 +69,7 @@ export default function SignUpScreen() {
       // If verification was completed, set the session to active
       // and redirect the user to onboarding
       if (signUpAttempt.status === 'complete') {
-        await setActive({ session: signUpAttempt.createdSessionId });
+        await setActive?.({ session: signUpAttempt.createdSessionId });
         
         // Navigate to onboarding in the protected folder
         router.replace('/onboarding');
@@ -89,14 +88,14 @@ export default function SignUpScreen() {
   };
 
   const onGooglePress = async () => {
-    if (!googleOAuth.startOAuthFlow) return;
+    if (!googleOAuth?.startOAuthFlow) return;
     
     try {
       setOAuthLoading(true);
       const result = await googleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
-        setActive({ session: result.createdSessionId });
+        await setActive?.({ session: result.createdSessionId });
         
         // Navigate to onboarding instead of home
         router.replace('/onboarding');
@@ -109,14 +108,14 @@ export default function SignUpScreen() {
   };
 
   const onApplePress = async () => {
-    if (!appleOAuth.startOAuthFlow) return;
+    if (!appleOAuth?.startOAuthFlow) return;
     
     try {
       setOAuthLoading(true);
       const result = await appleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
-        setActive({ session: result.createdSessionId });
+        await setActive?.({ session: result.createdSessionId });
         
         // Navigate to onboarding instead of home
         router.replace('/onboarding');
@@ -167,17 +166,14 @@ export default function SignUpScreen() {
                 length={6}
               />
               
-              <TouchableOpacity 
-                style={styles.button} 
+              <Button 
+                title="Verify"
+                variant="primary"
+                fullWidth={true}
+                loading={loading}
                 onPress={onVerifyPress}
                 disabled={code.length !== 6 || loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Verify</Text>
-                )}
-              </TouchableOpacity>
+              />
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -247,25 +243,14 @@ export default function SignUpScreen() {
               keyboardType="email-address"
             />
             
-            <InputField
-              label="Password"
-              value={password}
-              placeholder="Your secure password"
-              secureTextEntry={true}
-              onChangeText={setPassword}
-            />
-            
-            <TouchableOpacity 
-              style={styles.button} 
+            <Button 
+              title="Continue"
+              variant="primary"
+              fullWidth={true}
+              loading={loading}
               onPress={onSignUpPress}
-              disabled={!emailAddress || !password || loading || !isLoaded}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Continue</Text>
-              )}
-            </TouchableOpacity>
+              disabled={!emailAddress || loading || !isLoaded}
+            />
           </View>
           
           <View style={styles.footer}>
@@ -293,7 +278,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   scrollContent: {
-    marginTop: -32,
+    marginTop: 0,
     flexGrow: 1,
     padding: 20,
     justifyContent: 'center',
@@ -304,13 +289,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   logo: {
-    width: 280,
-    height: 280,
+    width: 120,
+    height: 120,
     marginVertical: 16,
   },
   title: {
     ...Fonts.title,
-    fontSize: 28,
+    fontSize: 32,
     marginBottom: 8,
     textAlign: 'center',
     color: Theme.colors.textPrimary,

@@ -7,10 +7,15 @@ import { Fonts } from './Fonts';
 export const Theme = {
   colors: ColorPalette,
   
+  // Gradients
+  gradients: {
+    cardspace: ['#8444F9', '#EB77C7'] as const,
+  },
+  
   // Button themes
   buttons: {
     primary: {
-      backgroundColor: ColorPalette.style_07,
+      backgroundColor: ColorPalette.style_07, // Only used for non-gradient rendering
       textColor: ColorPalette.white,
       ...Fonts.bold,
     },
@@ -44,6 +49,11 @@ export const Theme = {
       textColor: ColorPalette.textPrimary,
       borderColor: ColorPalette.style_03,
       borderWidth: 1,
+      ...Fonts.bold,
+    },
+    gradient: {
+      backgroundColor: 'transparent', // Not used with gradient
+      textColor: ColorPalette.white,
       ...Fonts.bold,
     },
   },

@@ -9,6 +9,8 @@ import { Fonts } from '@/constants/Fonts';
 import { GoogleButton } from '@/components/ui/GoogleButton';
 import { AppleButton } from '@/components/ui/AppleButton';
 import { Theme } from '@/constants/Theme';
+import { CodeInput } from '@/components/ui/CodeInput';
+import { Button } from '@/components/ui/Button';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -20,33 +22,26 @@ export default function SignInScreen() {
   const appleOAuth = useOAuth({ strategy: "oauth_apple" });
 
   const [emailAddress, setEmailAddress] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [verificationCode, setVerificationCode] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [oauthLoading, setOAuthLoading] = React.useState(false);
+  const [pendingVerification, setPendingVerification] = React.useState(false);
 
   // Handle the submission of the sign-in form
   const onSignInPress = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || !signIn) return;
     
     setLoading(true);
     
-    // Start the sign-in process using the email and password provided
     try {
-      const signInAttempt = await signIn.create({
+      // Start the sign-in process using email code
+      await signIn.create({
+        strategy: 'email_code',
         identifier: emailAddress,
-        password,
       });
-
-      // If sign-in process is complete, set the created session as active
-      // and redirect the user
-      if (signInAttempt.status === 'complete') {
-        await setActive({ session: signInAttempt.createdSessionId });
-        router.replace('/');
-      } else {
-        // If the status isn't complete, check why. User might need to
-        // complete further steps.
-        console.error(JSON.stringify(signInAttempt, null, 2));
-      }
+      
+      // Set pendingVerification to true to show the verification screen
+      setPendingVerification(true);
     } catch (err) {
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
@@ -56,15 +51,41 @@ export default function SignInScreen() {
     }
   };
 
+  // Handle verification code submission
+  const onVerifyPress = async () => {
+    if (!isLoaded || !signIn) return;
+    
+    setLoading(true);
+    
+    try {
+      // Attempt to verify the email code
+      const result = await signIn.attemptFirstFactor({
+        strategy: 'email_code',
+        code: verificationCode,
+      });
+      
+      if (result.status === 'complete' && result.createdSessionId) {
+        await setActive?.({ session: result.createdSessionId });
+        router.replace('/');
+      } else {
+        console.error('Verification failed', result);
+      }
+    } catch (err) {
+      console.error('Verification error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onGooglePress = async () => {
-    if (!googleOAuth.startOAuthFlow) return;
+    if (!googleOAuth?.startOAuthFlow) return;
     
     try {
       setOAuthLoading(true);
       const result = await googleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
-        await setActive({ session: result.createdSessionId });
+        await setActive?.({ session: result.createdSessionId });
         
         // For simplicity, always redirect to onboarding for OAuth sign-ins
         // In a production app, you would use a more robust method to determine if this is a new user
@@ -85,7 +106,7 @@ export default function SignInScreen() {
       const result = await appleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
-        await setActive({ session: result.createdSessionId });
+        await setActive?.({ session: result.createdSessionId });
         
         // For simplicity, always redirect to onboarding for OAuth sign-ins
         // In a production app, you would use a more robust method to determine if this is a new user
@@ -97,6 +118,60 @@ export default function SignInScreen() {
       setOAuthLoading(false);
     }
   };
+
+  if (pendingVerification) {
+    return (
+      <ImageBackground 
+        source={require('@/assets/images/bg.png')} 
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        <KeyboardAvoidingView 
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={true}
+            bounces={true}
+          >
+            <View style={styles.titleContainer}>
+              <Image 
+                source={require('@/assets/images/security.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <Text style={styles.title}>Verify your email</Text>
+              
+              <Text style={styles.subtitle}>
+                For added security, verify your code. Enter the 6 digit code that was sent to:
+              </Text>
+              <Text style={styles.emailHighlight}>{emailAddress}</Text>
+            </View>
+            
+            <View style={styles.inputContainer}>
+              <CodeInput
+                value={verificationCode}
+                onChange={setVerificationCode}
+                autoFocus={true}
+                length={6}
+              />
+              
+              <Button 
+                title="Verify"
+                variant="primary"
+                fullWidth={true}
+                loading={loading}
+                disabled={verificationCode.length !== 6 || loading}
+                onPress={onVerifyPress}
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
+    );
+  }
 
   return (
     <ImageBackground 
@@ -121,7 +196,7 @@ export default function SignInScreen() {
               resizeMode="contain"
             />
             <Text style={styles.title}>
-              Welcome to <Text style={styles.highlightText}>CardSpace</Text>
+              Sign in to <Text style={styles.highlightText}>CardSpace</Text>
             </Text>
             <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
           </View>
@@ -160,25 +235,14 @@ export default function SignInScreen() {
               keyboardType="email-address"
             />
             
-            <InputField
-              label="Password"
-              value={password}
-              placeholder="Your password"
-              secureTextEntry={true}
-              onChangeText={setPassword}
-            />
-            
-            <TouchableOpacity 
-              style={styles.button} 
+            <Button 
+              title="Continue"
+              variant="primary"
+              fullWidth={true}
+              loading={loading}
+              disabled={!emailAddress || loading || !isLoaded}
               onPress={onSignInPress}
-              disabled={!emailAddress || !password || loading || !isLoaded}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Continue</Text>
-              )}
-            </TouchableOpacity>
+            />
           </View>
           
           <View style={styles.footer}>
@@ -204,6 +268,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
+    marginTop: 24,
   },
   scrollContent: {
     flexGrow: 1,
@@ -216,21 +281,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 150,
+    height: 150,
     marginVertical: 16,
   },
   title: {
     ...Fonts.title,
-    fontSize: 28,
+    fontSize: 40,
     marginBottom: 8,
     textAlign: 'center',
     color: Theme.colors.textPrimary,
-    lineHeight: 32,
+    lineHeight: 48,
   },
   highlightText: {
     ...Fonts.title,
-    fontSize: 28,
+    fontSize: 40,
     color: Theme.colors.style_06,
   },
   subtitle: {
@@ -276,19 +341,6 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     rowGap: 4,
   },
-  button: {
-    backgroundColor: '#6c47ff',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 0,
-  },
-  buttonText: {
-    color: '#fff',
-    ...Fonts.regular,
-    fontSize: 14,
-  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -305,5 +357,12 @@ const styles = StyleSheet.create({
     color: '#6c47ff',
     ...Fonts.bold,
     fontSize: 14,
+  },
+  emailHighlight: {
+    ...Fonts.regular,
+    fontSize: 14,
+    color: Theme.colors.style_06,
+    textAlign: 'center',
+    marginTop: 4,
   },
 }); 

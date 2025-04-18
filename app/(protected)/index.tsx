@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
+import { Button } from '@/components/ui/Button';
+import { Theme } from '@/constants/Theme';
 
 export default function ProtectedHome() {
   const { signOut } = useAuth();
@@ -19,7 +21,7 @@ export default function ProtectedHome() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome!!!</Text>
+      <Text style={styles.title}>Welcome!</Text>
       
       <View style={styles.card}>
         <Text style={styles.greeting}>
@@ -31,19 +33,19 @@ export default function ProtectedHome() {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.button} 
+        <Button 
+          title="View Profile"
+          variant="primary"
+          fullWidth={true}
           onPress={goToProfile}
-        >
-          <Text style={styles.buttonText}>View Profile</Text>
-        </TouchableOpacity>
+        />
         
-        <TouchableOpacity 
-          style={[styles.button, styles.signOutButton]} 
+        <Button 
+          title="Sign Out"
+          variant="danger"
+          fullWidth={true}
           onPress={handleSignOut}
-        >
-          <Text style={styles.buttonText}>Sign Out</Text>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );
@@ -83,20 +85,4 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
   },
-  button: {
-    backgroundColor: '#6c47ff',
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  signOutButton: {
-    backgroundColor: '#ff4747',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  }
 }); 

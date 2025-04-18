@@ -13,10 +13,11 @@ import {
   ImageBackground
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { InputField } from '@/components/ui/InputField';
 import { Fonts } from '@/constants/Fonts';
 import { Theme } from '@/constants/Theme';
+import { Button } from '@/components/ui/Button';
 
 export default function OnboardingScreen() {
   const { signOut, isLoaded } = useAuth();
@@ -118,8 +119,11 @@ export default function OnboardingScreen() {
               </View>
             )}
             
-            <TouchableOpacity 
-              style={styles.button} 
+            <Button 
+              title={step === 2 ? 'Complete Setup' : 'Continue'}
+              variant="primary"
+              fullWidth={true}
+              loading={loading}
               onPress={handleContinue}
               disabled={
                 (step === 1 && !fullName) || 
@@ -127,22 +131,14 @@ export default function OnboardingScreen() {
                 loading || 
                 !isLoaded
               }
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {step === 2 ? 'Complete Setup' : 'Continue'}
-                </Text>
-              )}
-            </TouchableOpacity>
+            />
             
-            <TouchableOpacity 
-              style={styles.skipButton} 
+            <Button 
+              title="Skip for now"
+              variant="outline"
+              fullWidth={true}
               onPress={handleSkip}
-            >
-              <Text style={styles.skipButtonText}>Skip for now</Text>
-            </TouchableOpacity>
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -219,29 +215,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 8,
     color: Theme.colors.textPrimary,
-  },
-  button: {
-    backgroundColor: Theme.colors.style_07,
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  buttonText: {
-    color: '#fff',
-    ...Fonts.regular,
-    fontSize: 14,
-  },
-  skipButton: {
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  skipButtonText: {
-    color: Theme.colors.textSecondary,
-    ...Fonts.regular,
-    fontSize: 14,
   },
 }); 

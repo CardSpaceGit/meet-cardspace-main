@@ -47,6 +47,27 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="chevron.left.forwardslash.chevron.right" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="button-demo"
+        options={{
+          title: 'Buttons',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="button.programmable" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="continue-demo"
+        options={{
+          title: 'Continue',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="arrow.right.circle.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="card-demo"
+        options={{
+          title: 'Cards',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="rectangle.stack.fill" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
