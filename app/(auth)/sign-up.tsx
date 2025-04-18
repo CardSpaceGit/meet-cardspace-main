@@ -65,7 +65,7 @@ export default function SignUpScreen() {
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
       });
-
+      
       console.log("Verification response:", JSON.stringify(signUpAttempt, null, 2));
 
       // If verification was completed, set the session to active
@@ -79,20 +79,36 @@ export default function SignUpScreen() {
         } catch (sessionErr) {
           console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
         }
+      } else if (signUpAttempt.status === 'missing_requirements') {
+        // Special handling for missing_requirements status
+        console.error(`Verification missing requirements: ${signUpAttempt.status}`);
+        
+        // Navigate to onboarding where the user can provide more information
+        router.replace('/onboarding');
+        
+        Alert.alert(
+          'Additional Information Needed',
+          'Your account was created, but we need more information to complete your profile. Please complete the onboarding process.',
+          [{ text: 'Continue', style: 'default' }]
+        );
       } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
         const status = signUpAttempt.status || 'unknown';
         console.error(`Verification incomplete. Status: ${status}`);
         Alert.alert(
           'Verification Incomplete', 
-          'Your account verification could not be completed. Please try again or contact support.'
+          'Your account verification could not be completed. Please try again or contact support.',
+          [{ text: 'OK', style: 'default' }]
         );
       }
     } catch (err) {
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
       console.error("Verification error:", JSON.stringify(err, null, 2));
+      Alert.alert(
+        'Verification Error',
+        'There was a problem verifying your account. Please try again.',
+        [{ text: 'OK', style: 'default' }]
+      );
     } finally {
       setLoading(false);
     }
@@ -159,7 +175,7 @@ export default function SignUpScreen() {
             <View style={styles.titleContainer}>
               <Image 
                 source={require('@/assets/images/security.png')}
-                style={styles.logo}
+                style={styles.securityImage}
                 resizeMode="contain"
               />
               <Text style={styles.title}>Verify your email</Text>
@@ -302,8 +318,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 150,
+    height: 150,
     marginVertical: 16,
   },
   title: {
@@ -313,6 +329,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: Theme.colors.textPrimary,
     lineHeight: 32,
+  },
+  securityImage: {
+    width: 220,
+    height: 220,
+    marginBottom: 16,
   },
   highlightText: {
     ...Fonts.title,

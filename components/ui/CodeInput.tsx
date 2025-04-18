@@ -44,12 +44,13 @@ export const CodeInput = ({
   }, [autoFocus]);
 
   const handleChange = (text: string, index: number) => {
-    const newValue = value.split('');
-    
     // Only allow digits
     if (text && !/^\d+$/.test(text)) {
       return;
     }
+    
+    // Create a new value array, ensuring it's the right length
+    const newValue = value.padEnd(length, '').split('');
     
     // Update the value at the current index
     newValue[index] = text;
@@ -59,7 +60,10 @@ export const CodeInput = ({
     
     // If we entered a digit and we're not at the last input, focus the next input
     if (text && index < length - 1) {
-      inputRefs.current[index + 1]?.focus();
+      // Use setTimeout to ensure the state update happens before focusing
+      setTimeout(() => {
+        inputRefs.current[index + 1]?.focus();
+      }, 0);
     }
   };
 

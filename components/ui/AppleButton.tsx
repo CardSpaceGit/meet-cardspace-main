@@ -77,7 +77,7 @@ export function AppleButton({
 
 const styles = StyleSheet.create({
   button: {
-    height: 56,
+    height: 48,
     borderRadius: Theme.borderRadius.round,
     justifyContent: 'center',
     alignItems: 'center',

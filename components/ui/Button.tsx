@@ -14,6 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 import { ColorPalette } from '@/constants/Colors';
+import { Fonts } from '@/constants/Fonts';
 
 // Define the gradient colors for CardSpace - using from Theme
 const CARDSPACE_GRADIENT_COLORS = Theme.gradients.cardspace;
@@ -208,9 +209,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   text: {
+    ...Fonts.regular,
     fontSize: Theme.text.body.fontSize,
     textAlign: 'center',
-    fontWeight: 'regular',
   },
   gradient: {
     width: '100%',
@@ -231,9 +232,11 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   smallText: {
+    ...Fonts.regular,
     fontSize: Theme.text.caption.fontSize,
   },
   largeText: {
+    ...Fonts.regular,
     fontSize: Theme.text.subheader.fontSize,
   },
 }); 

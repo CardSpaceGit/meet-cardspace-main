@@ -1,47 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
-  TouchableOpacity, 
-  ActivityIndicator, 
   Platform, 
   Image,
-  ScrollView,
   KeyboardAvoidingView,
-  TextInput,
-  ImageBackground
+  FlatList,
+  Dimensions,
+  NativeSyntheticEvent,
+  NativeScrollEvent
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth, useUser } from '@clerk/clerk-expo';
+import { useAuth } from '@clerk/clerk-expo';
 import { InputField } from '@/components/ui/InputField';
 import { Fonts } from '@/constants/Fonts';
 import { Theme } from '@/constants/Theme';
 import { Button } from '@/components/ui/Button';
 
+const { width } = Dimensions.get('window');
+
+// Define interface for onboarding screen data
+interface OnboardingScreenData {
+  index: number;
+  backgroundColor: string;
+}
+
 export default function OnboardingScreen() {
-  const { signOut, isLoaded } = useAuth();
+  const { isLoaded } = useAuth();
   const router = useRouter();
   
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
+  
+  const flatListRef = useRef<FlatList>(null);
   
   const handleContinue = async () => {
     setLoading(true);
     
     try {
-      // For step 1, just move to step 2
       if (step === 1) {
         setStep(2);
+        flatListRef.current?.scrollToIndex({ index: 1, animated: true });
       } 
-      // For step 2, complete onboarding and navigate to home
       else if (step === 2) {
+        setStep(3);
+        flatListRef.current?.scrollToIndex({ index: 2, animated: true });
+      }
+      else if (step === 3) {
         // Here you would typically update the user's profile
-        // with the collected information
-
-        // Navigate to the home screen (the index in protected folder)
+        // Navigate to the home screen
         router.replace('/');
       }
     } catch (err) {
@@ -56,48 +67,32 @@ export default function OnboardingScreen() {
     router.replace('/');
   };
 
-  return (
-    <ImageBackground 
-      source={require('@/assets/images/bg.png')} 
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <KeyboardAvoidingView 
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={true}
-          bounces={true}
-        >
-          <View style={styles.titleContainer}>
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset } = event.nativeEvent;
+    const currentIndex = Math.round(contentOffset.x / width) + 1;
+    
+    if (currentIndex !== step) {
+      setStep(currentIndex);
+    }
+  };
+
+  const renderOnboardingScreen = ({ item }: { item: OnboardingScreenData }) => {
+    const { index, backgroundColor } = item;
+    
+    return (
+      <View style={[styles.screen, { backgroundColor }]}>
+        <View style={styles.contentContainer}>
+          <View style={styles.logoContainer}>
             <Image 
               source={require('@/assets/images/cardspace_logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.title}>
-              {step === 1 ? 'Welcome to ' : 'Complete your '}
-              <Text style={styles.highlightText}>CardSpace</Text>
-            </Text>
-            <Text style={styles.subtitle}>
-              {step === 1 
-                ? 'Let\'s personalize your experience' 
-                : 'Just a few more details to get started'}
-            </Text>
-          </View>
-          
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressIndicator, styles.activeProgress]} />
-            <View style={[styles.progressIndicator, step === 2 ? styles.activeProgress : {}]} />
           </View>
           
           <View style={styles.formContainer}>
-            {step === 1 ? (
+            {index === 1 && (
               <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>What's your name?</Text>
                 <InputField
                   label="Full Name"
                   value={fullName}
@@ -106,9 +101,10 @@ export default function OnboardingScreen() {
                   autoCapitalize="words"
                 />
               </View>
-            ) : (
+            )}
+            
+            {index === 2 && (
               <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>What's your phone number?</Text>
                 <InputField
                   label="Phone Number"
                   value={phoneNumber}
@@ -119,15 +115,29 @@ export default function OnboardingScreen() {
               </View>
             )}
             
+            {index === 3 && (
+              <View style={styles.inputContainer}>
+                <InputField
+                  label="Email Address"
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter your email address"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+            )}
+            
             <Button 
-              title={step === 2 ? 'Complete Setup' : 'Continue'}
+              title={step === 3 ? 'Complete Setup' : 'Continue'}
               variant="primary"
               fullWidth={true}
               loading={loading}
               onPress={handleContinue}
               disabled={
                 (step === 1 && !fullName) || 
-                (step === 2 && !phoneNumber) || 
+                (step === 2 && !phoneNumber) ||
+                (step === 3 && !email) ||
                 loading || 
                 !isLoaded
               }
@@ -140,28 +150,63 @@ export default function OnboardingScreen() {
               onPress={handleSkip}
             />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </ImageBackground>
+        </View>
+      </View>
+    );
+  };
+
+  const onboardingData = [
+    { index: 1, backgroundColor: '#D0F9F6' },
+    { index: 2, backgroundColor: '#FFEBF0' },
+    { index: 3, backgroundColor: '#F0F3FC' },
+  ];
+
+  return (
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <View style={styles.progressContainer}>
+        <View style={[styles.progressIndicator, step >= 1 ? styles.activeProgress : {}]} />
+        <View style={[styles.progressIndicator, step >= 2 ? styles.activeProgress : {}]} />
+        <View style={[styles.progressIndicator, step >= 3 ? styles.activeProgress : {}]} />
+      </View>
+      
+      <FlatList
+        ref={flatListRef}
+        data={onboardingData}
+        renderItem={renderOnboardingScreen}
+        keyExtractor={(item) => item.index.toString()}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={handleScroll}
+        scrollEventThrottle={16}
+        getItemLayout={(_, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+      />
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
-  scrollContent: {
-    flexGrow: 1,
+  screen: {
+    width,
+    flex: 1,
+  },
+  contentContainer: {
+    flex: 1,
     padding: 20,
     justifyContent: 'center',
   },
-  titleContainer: {
+  logoContainer: {
     alignItems: 'center',
     marginBottom: 32,
   },
@@ -170,35 +215,18 @@ const styles = StyleSheet.create({
     height: 120,
     marginVertical: 16,
   },
-  title: {
-    ...Fonts.title,
-    fontSize: 28,
-    marginBottom: 8,
-    textAlign: 'center',
-    color: Theme.colors.textPrimary,
-    lineHeight: 32,
-  },
-  highlightText: {
-    ...Fonts.title,
-    fontSize: 28,
-    color: Theme.colors.style_06,
-  },
-  subtitle: {
-    ...Fonts.regular,
-    fontSize: 14,
-    textAlign: 'center',
-    color: Theme.colors.textSecondary,
-  },
   progressContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 32,
+    marginTop: 40,
+    marginBottom: 20,
     gap: 8,
+    zIndex: 10,
   },
   progressIndicator: {
     width: 32,
     height: 4,
-    backgroundColor: Theme.colors.style_03,
+    backgroundColor: 'rgba(0,0,0,0.1)',
     borderRadius: 2,
   },
   activeProgress: {

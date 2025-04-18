@@ -25,6 +25,10 @@ export default function ProtectedRoutesLayout() {
         title: 'Profile',
         headerShown: true 
       }} />
+      <Stack.Screen name="onboarding" options={{ 
+        title: "",
+        headerShown: false 
+      }} />
     </Stack>
   );
 } 
