@@ -11,7 +11,8 @@ import {
   NativeScrollEvent,
   Image,
   ViewStyle,
-  TextStyle
+  TextStyle,
+  ImageStyle
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
@@ -27,6 +28,9 @@ interface OnboardingScreenData {
   backgroundColor: string;
   title: string;
   subtitle: string;
+  image: any;
+  imageWidth: number;
+  imageHeight: number;
 }
 
 // Define styles interface
@@ -38,8 +42,7 @@ interface StylesProps {
   title: TextStyle;
   subtitle: TextStyle;
   imageContainer: ViewStyle;
-  imagePlaceholder: ViewStyle;
-  placeholderCircle: ViewStyle;
+  onboardingImage: ImageStyle;
   progressContainer: ViewStyle;
   progressIndicator: ViewStyle;
   activeProgress: ViewStyle;
@@ -58,20 +61,29 @@ export default function OnboardingScreen() {
     { 
       index: 1, 
       backgroundColor: '#D0F9F6',
-      title: 'Save time, save money, save yourself from loyalty card chaos!',
-      subtitle: 'No more fumbling through your wallet for the right card.'
+      title: 'Save time, save money, save yourself from loyalty card chaos! 🕒💸😅',
+      subtitle: 'No more fumbling through your wallet for the right card. 🚀🤑',
+      image: require('@/assets/images/onboarding01.png'),
+      imageWidth: 500,
+      imageHeight: 500
     },
     { 
       index: 2, 
       backgroundColor: '#FFEBF0',
-      title: 'Ditch the loyalty card Cha-Cha',
-      subtitle: 'Focus on what matters – enjoying your shopping experience.'
+      title: '"Ditch the loyalty card Cha-Cha - Shopping is not a dance floor! 💃🕺🏼"',
+      subtitle: 'Focus on what matters – enjoying your shopping experience. 💃🕺',
+      image: require('@/assets/images/onboarding02.png'),
+      imageWidth: 480,
+      imageHeight: 580
     },
     { 
       index: 3, 
       backgroundColor: '#F0F3FC',
-      title: 'Slow down, speedy shopper!',
-      subtitle: 'Access all your loyalty rewards in one app and make shopping a breeze.'
+      title: 'Slow down, speedy shopper! 🐌🛍️',
+      subtitle: 'Access all your loyalty rewards in one app and make shopping a breeze. 🌬️🛒',
+      image: require('@/assets/images/onboarding03.png'),
+      imageWidth: 480,
+      imageHeight: 480
     },
   ];
   
@@ -83,7 +95,7 @@ export default function OnboardingScreen() {
     setLoading(true);
     
     try {
-      // Only called on the last step
+      // Navigate to the protected index screen
       router.replace('/');
     } catch (err) {
       console.error('Onboarding error:', err);
@@ -106,33 +118,8 @@ export default function OnboardingScreen() {
     }
   };
 
-  const renderImageForScreen = (index: number) => {
-    switch(index) {
-      case 1:
-        return (
-          <View style={styles.imagePlaceholder}>
-            <View style={[styles.placeholderCircle, { backgroundColor: '#A1E8E3' }]} />
-          </View>
-        );
-      case 2:
-        return (
-          <View style={styles.imagePlaceholder}>
-            <View style={[styles.placeholderCircle, { backgroundColor: '#FFD6E0' }]} />
-          </View>
-        );
-      case 3:
-        return (
-          <View style={styles.imagePlaceholder}>
-            <View style={[styles.placeholderCircle, { backgroundColor: '#DCE3F9' }]} />
-          </View>
-        );
-      default:
-        return null;
-    }
-  };
-
   const renderOnboardingScreen = ({ item }: { item: OnboardingScreenData }) => {
-    const { index, backgroundColor, title, subtitle } = item;
+    const { index, backgroundColor, title, subtitle, image, imageWidth, imageHeight } = item;
     
     return (
       <View style={[styles.screen, { backgroundColor }]}>
@@ -143,7 +130,11 @@ export default function OnboardingScreen() {
           </View>
           
           <View style={styles.imageContainer}>
-            {renderImageForScreen(index)}
+            <Image
+              source={image}
+              style={[styles.onboardingImage, { width: imageWidth, height: imageHeight }]}
+              resizeMode="contain"
+            />
           </View>
           
           {index === 3 && (
@@ -191,7 +182,8 @@ export default function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create<StylesProps>({
+// Define StyleSheet with correct typing
+const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -201,11 +193,11 @@ const styles = StyleSheet.create<StylesProps>({
   },
   contentContainer: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
     justifyContent: 'space-between',
   },
   headerContainer: {
-    marginTop: 20,
+    marginTop: 2,
     alignItems: 'center',
   },
   title: {
@@ -215,33 +207,25 @@ const styles = StyleSheet.create<StylesProps>({
     marginBottom: 12,
     color: Theme.colors.textPrimary,
     lineHeight: 34,
-    paddingHorizontal: 20,
+    paddingHorizontal: 4,
   },
   subtitle: {
     ...Fonts.regular,
     fontSize: 16,
     textAlign: 'center',
     color: Theme.colors.textSecondary,
-    paddingHorizontal: 20,
+    paddingHorizontal: 4,
   },
   imageContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 40,
+    marginVertical: 4,
   },
-  imagePlaceholder: {
-    width: width * 0.7,
-    height: width * 0.7,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 20,
-  },
-  placeholderCircle: {
-    width: width * 0.5,
-    height: width * 0.5,
-    borderRadius: width * 0.25,
+  onboardingImage: {
+    // Base styles - will be overridden by inline styles
+    width: width * 0.8,
+    height: width * 0.8,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -265,4 +249,4 @@ const styles = StyleSheet.create<StylesProps>({
     marginTop: 20,
     marginBottom: 20,
   },
-}); 
+}) as StylesProps; 
