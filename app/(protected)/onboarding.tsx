@@ -74,7 +74,7 @@ export default function OnboardingScreen() {
       subtitle: 'Focus on what matters – enjoying your shopping experience. 💃🕺',
       image: require('@/assets/images/onboarding02.png'),
       imageWidth: 480,
-      imageHeight: 580
+      imageHeight: 520
     },
     { 
       index: 3, 

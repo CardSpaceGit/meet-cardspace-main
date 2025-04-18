@@ -1,0 +1,23 @@
+Placeholder Images for CardSpace App
+
+Please add the following images to the assets/images directory:
+
+1. card-placeholder.png
+   - An image of a loyalty card with a gradient background
+   - Size: 500x250px recommended
+
+2. hand-with-phone.png
+   - An image of a hand holding a phone
+   - Size: 300x300px recommended
+
+3. arrow-down.png
+   - A curved arrow pointing down
+   - Size: 200x200px recommended
+
+4. home-icon.png
+   - A simple home icon
+   - Size: 48x48px recommended
+
+Once these images are added, the home screen layout will display properly with the placeholder images.
+
+For development purposes, you can create simple placeholder images with any image editor or use online placeholder image generators until you have final design assets. 

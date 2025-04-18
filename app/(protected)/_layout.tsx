@@ -18,15 +18,15 @@ export default function ProtectedRoutesLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ 
-        title: 'Home',
-        headerShown: true 
+        headerShown: false 
+      }} />
+      <Stack.Screen name="cards" options={{ 
+        headerShown: false 
       }} />
       <Stack.Screen name="profile" options={{ 
-        title: 'Profile',
-        headerShown: true 
+        headerShown: false 
       }} />
       <Stack.Screen name="onboarding" options={{ 
-        title: "",
         headerShown: false 
       }} />
     </Stack>

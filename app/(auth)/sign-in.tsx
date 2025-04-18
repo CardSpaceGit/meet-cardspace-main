@@ -11,6 +11,7 @@ import { AppleButton } from '@/components/ui/AppleButton';
 import { Theme } from '@/constants/Theme';
 import { CodeInput } from '@/components/ui/CodeInput';
 import { Button } from '@/components/ui/Button';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -24,7 +25,8 @@ export default function SignInScreen() {
   const [emailAddress, setEmailAddress] = React.useState('');
   const [verificationCode, setVerificationCode] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [oauthLoading, setOAuthLoading] = React.useState(false);
+  const [googleLoading, setGoogleLoading] = React.useState(false);
+  const [appleLoading, setAppleLoading] = React.useState(false);
   const [pendingVerification, setPendingVerification] = React.useState(false);
 
   // Handle the submission of the sign-in form
@@ -69,7 +71,8 @@ export default function SignInScreen() {
       if (result.status === 'complete' && result.createdSessionId) {
         try {
           await setActive?.({ session: result.createdSessionId });
-          router.replace('/');
+          // Navigate to auth-loading for smooth transition
+          router.replace('/auth-loading');
         } catch (sessionErr) {
           console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
         }
@@ -92,41 +95,39 @@ export default function SignInScreen() {
     if (!googleOAuth?.startOAuthFlow) return;
     
     try {
-      setOAuthLoading(true);
+      setGoogleLoading(true);
       const result = await googleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
         await setActive?.({ session: result.createdSessionId });
         
-        // For simplicity, always redirect to onboarding for OAuth sign-ins
-        // In a production app, you would use a more robust method to determine if this is a new user
-        router.replace('/onboarding');
+        // Navigate to auth-loading for smooth transition
+        router.replace('/auth-loading');
       }
     } catch (err) {
       console.error('OAuth error:', err);
     } finally {
-      setOAuthLoading(false);
+      setGoogleLoading(false);
     }
   };
 
   const onApplePress = async () => {
-    if (!appleOAuth.startOAuthFlow) return;
+    if (!appleOAuth?.startOAuthFlow) return;
     
     try {
-      setOAuthLoading(true);
+      setAppleLoading(true);
       const result = await appleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
         await setActive?.({ session: result.createdSessionId });
         
-        // For simplicity, always redirect to onboarding for OAuth sign-ins
-        // In a production app, you would use a more robust method to determine if this is a new user
-        router.replace('/onboarding');
+        // Navigate to auth-loading for smooth transition
+        router.replace('/auth-loading');
       }
     } catch (err) {
       console.error('OAuth error:', err);
     } finally {
-      setOAuthLoading(false);
+      setAppleLoading(false);
     }
   };
 
@@ -217,16 +218,16 @@ export default function SignInScreen() {
           <View style={styles.oauthContainer}>
             <GoogleButton 
               onPress={onGooglePress}
-              disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
-              loading={oauthLoading}
+              disabled={googleLoading || appleLoading || !isLoaded || !googleOAuth.startOAuthFlow}
+              loading={googleLoading}
               fullWidth
             />
             
             {Platform.OS === 'ios' && (
               <AppleButton 
                 onPress={onApplePress}
-                disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
-                loading={oauthLoading}
+                disabled={appleLoading || googleLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+                loading={appleLoading}
                 fullWidth
               />
             )}

@@ -11,6 +11,7 @@ import { AppleButton } from '@/components/ui/AppleButton';
 import { Theme } from '@/constants/Theme';
 import { CodeInput } from '@/components/ui/CodeInput';
 import { Button } from '@/components/ui/Button';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,7 +26,8 @@ export default function SignUpScreen() {
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [oauthLoading, setOAuthLoading] = React.useState(false);
+  const [googleLoading, setGoogleLoading] = React.useState(false);
+  const [appleLoading, setAppleLoading] = React.useState(false);
 
   // Handle submission of sign-up form
   const onSignUpPress = async () => {
@@ -74,8 +76,8 @@ export default function SignUpScreen() {
         try {
           await setActive?.({ session: signUpAttempt.createdSessionId });
           
-          // Navigate to onboarding in the protected folder
-          router.replace('/onboarding');
+          // Navigate to auth-loading screen for smooth transition
+          router.replace('/auth-loading');
         } catch (sessionErr) {
           console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
         }
@@ -83,8 +85,11 @@ export default function SignUpScreen() {
         // Special handling for missing_requirements status
         console.error(`Verification missing requirements: ${signUpAttempt.status}`);
         
+        // Show loading screen before navigation
+        setLoading(true);
+        
         // Navigate to onboarding where the user can provide more information
-        router.replace('/onboarding');
+        router.replace('/(protected)/onboarding');
         
         Alert.alert(
           'Additional Information Needed',
@@ -118,19 +123,19 @@ export default function SignUpScreen() {
     if (!googleOAuth?.startOAuthFlow) return;
     
     try {
-      setOAuthLoading(true);
+      setGoogleLoading(true);
       const result = await googleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
         await setActive?.({ session: result.createdSessionId });
         
-        // Navigate to onboarding instead of home
-        router.replace('/onboarding');
+        // Navigate to auth-loading for smooth transition
+        router.replace('/auth-loading');
       }
     } catch (err) {
       console.error('OAuth error:', err);
     } finally {
-      setOAuthLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -138,19 +143,19 @@ export default function SignUpScreen() {
     if (!appleOAuth?.startOAuthFlow) return;
     
     try {
-      setOAuthLoading(true);
+      setAppleLoading(true);
       const result = await appleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
         await setActive?.({ session: result.createdSessionId });
         
-        // Navigate to onboarding instead of home
-        router.replace('/onboarding');
+        // Navigate to auth-loading for smooth transition
+        router.replace('/auth-loading');
       }
     } catch (err) {
       console.error('OAuth error:', err);
     } finally {
-      setOAuthLoading(false);
+      setAppleLoading(false);
     }
   };
 
@@ -178,10 +183,10 @@ export default function SignUpScreen() {
                 style={styles.securityImage}
                 resizeMode="contain"
               />
-              <Text style={styles.title}>Verify your email</Text>
+              <Text style={styles.title}>Let's verify your email</Text>
               
               <Text style={styles.subtitle}>
-                For added security, verify your code. Enter the 6 digit code that was sent to:
+                For added security, enter the 6 digit code that was sent to:
               </Text>
               <Text style={styles.emailText}>{emailAddress}</Text>
             </View>
@@ -241,16 +246,16 @@ export default function SignUpScreen() {
           <View style={styles.oauthContainer}>
             <GoogleButton 
               onPress={onGooglePress}
-              disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
-              loading={oauthLoading}
+              disabled={googleLoading || appleLoading || !isLoaded || !googleOAuth.startOAuthFlow}
+              loading={googleLoading}
               fullWidth
             />
             
             {Platform.OS === 'ios' && (
               <AppleButton 
                 onPress={onApplePress}
-                disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
-                loading={oauthLoading}
+                disabled={appleLoading || googleLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+                loading={appleLoading}
                 fullWidth
               />
             )}
@@ -349,7 +354,7 @@ const styles = StyleSheet.create({
   },
   emailText: {
     ...Fonts.regular,
-    fontSize: 14,
+    fontSize: 16,
     color: Theme.colors.style_06,
   },
   oauthContainer: {
