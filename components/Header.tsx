@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Platform } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { Fonts } from '@/constants/Fonts';
 import { Theme } from '@/constants/Theme';
 import { IconSymbol } from './ui/IconSymbol';
+import { SideMenu } from './SideMenu';
 
 interface HeaderProps {
   title?: string;
@@ -23,6 +24,7 @@ export function Header({
 }: HeaderProps) {
   const { user } = useUser();
   const router = useRouter();
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const handleProfilePress = () => {
     if (onProfilePress) {
@@ -35,43 +37,52 @@ export function Header({
   const handleMenuPress = () => {
     if (onMenuPress) {
       onMenuPress();
+    } else {
+      setMenuVisible(true);
     }
-    // Default menu behavior could be added here
+  };
+
+  const handleCloseMenu = () => {
+    setMenuVisible(false);
   };
 
   return (
-    <View style={styles.container}>
-      {showMenu && (
-        <TouchableOpacity style={styles.menuButton} onPress={handleMenuPress}>
-          <View style={styles.menuIconContainer}>
-            <View style={[styles.menuLine, { width: 24 }]} />
-            <View style={[styles.menuLine, { width: 18 }]} />
-            <View style={[styles.menuLine, { width: 12 }]} />
-          </View>
-          <Text style={styles.menuText}>Menu</Text>
-        </TouchableOpacity>
-      )}
-
-      <Text style={styles.title}>{title}</Text>
-
-      {showProfile && (
-        <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
-          {user?.imageUrl ? (
-            <Image
-              source={{ uri: user.imageUrl }}
-              style={styles.profileImage}
+    <>
+      <View style={styles.container}>
+        {showMenu && (
+          <TouchableOpacity style={styles.menuButton} onPress={handleMenuPress}>
+            <Image 
+              source={require('@/assets/images/menu.png')} 
+              style={styles.menuIcon}
+              resizeMode="contain"
             />
-          ) : (
-            <View style={styles.profileImagePlaceholder}>
-              <Text style={styles.profileInitials}>
-                {user?.firstName?.[0] || ''}
-                {user?.lastName?.[0] || ''}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      )}
-    </View>
+            <Text style={styles.menuText}>Menu</Text>
+          </TouchableOpacity>
+        )}
+
+        <Text style={styles.title}>{title}</Text>
+
+        {showProfile && (
+          <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
+            {user?.imageUrl ? (
+              <Image
+                source={{ uri: user.imageUrl }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <View style={styles.profileImagePlaceholder}>
+                <Text style={styles.profileInitials}>
+                  {user?.firstName?.[0] || ''}
+                  {user?.lastName?.[0] || ''}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+      </View>
+      
+      <SideMenu isVisible={menuVisible} onClose={handleCloseMenu} />
+    </>
   );
 }
 
@@ -91,15 +102,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  menuIconContainer: {
+  menuIcon: {
+    width: 32,
+    height: 32,
     marginRight: 8,
-    justifyContent: 'center',
-  },
-  menuLine: {
-    height: 3,
-    backgroundColor: '#6A5ACD',
-    marginVertical: 2,
-    borderRadius: 2,
   },
   menuText: {
     ...Fonts.bold,
@@ -108,10 +114,11 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Fonts.title,
-    fontSize: 24,
+    fontSize: 20,
     color: '#464168',
     textAlign: 'center',
     flex: 1,
+    marginRight: 32,
   },
   profileButton: {
     height: 40,

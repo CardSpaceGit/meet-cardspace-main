@@ -8,7 +8,8 @@ import {
   ScrollView,
   Platform,
   SafeAreaView,
-  Dimensions
+  Dimensions,
+  ImageBackground
 } from 'react-native';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
@@ -35,72 +36,82 @@ export default function ProtectedHome() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header title="Welcome" />
-      
-      <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
-        bounces={true}
-        alwaysBounceVertical={true}
-        scrollEnabled={true}
-      >
-        {/* Card placeholder section */}
-        <TouchableOpacity style={styles.cardPlaceholder} onPress={handleAddCard}>
+    <ImageBackground 
+      source={require('@/assets/images/bg.png')} 
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={styles.container}>
+        <Header title="Welcome" />
+        
+        <ScrollView 
+          style={styles.scrollView} 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+          alwaysBounceVertical={true}
+          scrollEnabled={true}
+        >
+          {/* Card placeholder section */}
+          <TouchableOpacity style={styles.cardPlaceholder} onPress={handleAddCard}>
+            <Image 
+              source={require('@/assets/images/card-placeholder.png')} 
+              style={styles.cardImage}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          
+          {/* Welcome text section */}
+          <View style={styles.welcomeTextContainer}>
+            <Text style={styles.welcomeTitle}>
+              Kick things off by giving your favourite rewards program a high-five ✋!
+            </Text>
+            <Text style={styles.welcomeSubtitle}>
+              Just hit that plus button below and let the rewards party begin!
+            </Text>
+          </View>
+          
+          {/* Add extra padding at the bottom for scrolling past the tab bar */}
+          <View style={styles.bottomPadding} />
+        </ScrollView>
+        
+        {/* Floating Add Button */}
+        <TouchableOpacity 
+          style={styles.floatingAddButton} 
+          onPress={handleAddCard}
+          activeOpacity={0.8}
+        >
           <Image 
-            source={require('@/assets/images/card-placeholder.png')} 
-            style={styles.cardImage}
-            resizeMode="contain"
+            source={require('@/assets/images/add.png')} 
+            style={styles.floatingAddIcon}
+            resizeMode="cover"
           />
         </TouchableOpacity>
         
-        {/* Welcome text section */}
-        <View style={styles.welcomeTextContainer}>
-          <Text style={styles.welcomeTitle}>
-            Kick things off by giving your favourite rewards program a high-five ✋!
-          </Text>
-          <Text style={styles.welcomeSubtitle}>
-            Just hit that plus button below and let the rewards party begin!
-          </Text>
+        {/* Arrow pointing to add button */}
+        <View style={styles.arrowContainer}>
+          <Image 
+            source={require('@/assets/images/arrow-down.png')} 
+            style={styles.arrowImage}
+            resizeMode="contain"
+          />
         </View>
         
-        {/* Add extra padding at the bottom for scrolling past the tab bar */}
-        <View style={styles.bottomPadding} />
-      </ScrollView>
-      
-      {/* Floating Add Button */}
-      <TouchableOpacity 
-        style={styles.floatingAddButton} 
-        onPress={handleAddCard}
-        activeOpacity={0.8}
-      >
-        <Image 
-          source={require('@/assets/images/add.png')} 
-          style={styles.floatingAddIcon}
-          resizeMode="cover"
-        />
-      </TouchableOpacity>
-      
-      {/* Arrow pointing to add button */}
-      <View style={styles.arrowContainer}>
-        <Image 
-          source={require('@/assets/images/arrow-down.png')} 
-          style={styles.arrowImage}
-          resizeMode="contain"
-        />
-      </View>
-      
-      {/* Use the new BottomNav component */}
-      <BottomNav />
-    </SafeAreaView>
+        {/* Use the new BottomNav component */}
+        <BottomNav />
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     paddingTop: Platform.OS === 'ios' ? 0 : 40, // No paddingTop on iOS when using SafeAreaView
   },
   scrollView: {
@@ -150,25 +161,19 @@ const styles = StyleSheet.create({
   },
   welcomeSubtitle: {
     ...Fonts.regular,
-    fontSize: 16,
+    fontSize: 14,
     color: Theme.colors.textSecondary,
     textAlign: 'center',
   },
   floatingAddButton: {
     position: 'absolute',
     right: 24,
-    bottom: Platform.OS === 'ios' ? 80 : 72, // Position above bottom nav
+    bottom: Platform.OS === 'ios' ? 88 : 88, // Position above bottom nav
     width: 68,
     height: 68,
     borderRadius: 40,
-    backgroundColor: Theme.colors.style_07,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
     zIndex: 999, // Ensure button stays on top
     overflow: 'hidden', // Ensure the image stays within bounds
   },
@@ -178,7 +183,7 @@ const styles = StyleSheet.create({
   },
   arrowContainer: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 112 : 104, // Position above the add button
+    bottom: Platform.OS === 'ios' ? 160 : 160, // Position above the add button
     right: 80, // Position to the left of the add button
     zIndex: 998, // Below the button but above other content
   },

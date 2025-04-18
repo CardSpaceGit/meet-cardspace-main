@@ -18,7 +18,7 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
       <Image 
-        source={require('../assets/images/splash-icon.png')} 
+        source={require('../assets/images/splash.gif')} 
         style={styles.logo}
       />
       <Text style={styles.title}>Welcome</Text>
