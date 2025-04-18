@@ -48,6 +48,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(protected)" options={{ headerShown: false }} />
           <Stack.Screen name="screens/SignInScreen" options={{ title: 'Sign In' }} />
           <Stack.Screen name="screens/SignUpScreen" options={{ title: 'Sign Up' }} />
           <Stack.Screen name="screens/VerifyCodeScreen" options={{ title: 'Verify Code' }} />

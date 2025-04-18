@@ -4,16 +4,17 @@ import {
   Text, 
   StyleSheet, 
   Platform, 
-  Image,
   KeyboardAvoidingView,
   FlatList,
   Dimensions,
   NativeSyntheticEvent,
-  NativeScrollEvent
+  NativeScrollEvent,
+  Image,
+  ViewStyle,
+  TextStyle
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
-import { InputField } from '@/components/ui/InputField';
 import { Fonts } from '@/constants/Fonts';
 import { Theme } from '@/constants/Theme';
 import { Button } from '@/components/ui/Button';
@@ -24,37 +25,66 @@ const { width } = Dimensions.get('window');
 interface OnboardingScreenData {
   index: number;
   backgroundColor: string;
+  title: string;
+  subtitle: string;
+}
+
+// Define styles interface
+interface StylesProps {
+  container: ViewStyle;
+  screen: ViewStyle;
+  contentContainer: ViewStyle;
+  headerContainer: ViewStyle;
+  title: TextStyle;
+  subtitle: TextStyle;
+  imageContainer: ViewStyle;
+  imagePlaceholder: ViewStyle;
+  placeholderCircle: ViewStyle;
+  progressContainer: ViewStyle;
+  progressIndicator: ViewStyle;
+  activeProgress: ViewStyle;
+  buttonContainer: ViewStyle;
 }
 
 export default function OnboardingScreen() {
   const { isLoaded } = useAuth();
   const router = useRouter();
-  
-  const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   
   const flatListRef = useRef<FlatList>(null);
+  
+  const onboardingData = [
+    { 
+      index: 1, 
+      backgroundColor: '#D0F9F6',
+      title: 'Save time, save money, save yourself from loyalty card chaos!',
+      subtitle: 'No more fumbling through your wallet for the right card.'
+    },
+    { 
+      index: 2, 
+      backgroundColor: '#FFEBF0',
+      title: 'Ditch the loyalty card Cha-Cha',
+      subtitle: 'Focus on what matters – enjoying your shopping experience.'
+    },
+    { 
+      index: 3, 
+      backgroundColor: '#F0F3FC',
+      title: 'Slow down, speedy shopper!',
+      subtitle: 'Access all your loyalty rewards in one app and make shopping a breeze.'
+    },
+  ];
+  
+  const getCurrentBackgroundColor = () => {
+    return onboardingData[step - 1]?.backgroundColor || '#D0F9F6';
+  };
   
   const handleContinue = async () => {
     setLoading(true);
     
     try {
-      if (step === 1) {
-        setStep(2);
-        flatListRef.current?.scrollToIndex({ index: 1, animated: true });
-      } 
-      else if (step === 2) {
-        setStep(3);
-        flatListRef.current?.scrollToIndex({ index: 2, animated: true });
-      }
-      else if (step === 3) {
-        // Here you would typically update the user's profile
-        // Navigate to the home screen
-        router.replace('/');
-      }
+      // Only called on the last step
+      router.replace('/');
     } catch (err) {
       console.error('Onboarding error:', err);
     } finally {
@@ -76,97 +106,65 @@ export default function OnboardingScreen() {
     }
   };
 
+  const renderImageForScreen = (index: number) => {
+    switch(index) {
+      case 1:
+        return (
+          <View style={styles.imagePlaceholder}>
+            <View style={[styles.placeholderCircle, { backgroundColor: '#A1E8E3' }]} />
+          </View>
+        );
+      case 2:
+        return (
+          <View style={styles.imagePlaceholder}>
+            <View style={[styles.placeholderCircle, { backgroundColor: '#FFD6E0' }]} />
+          </View>
+        );
+      case 3:
+        return (
+          <View style={styles.imagePlaceholder}>
+            <View style={[styles.placeholderCircle, { backgroundColor: '#DCE3F9' }]} />
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+
   const renderOnboardingScreen = ({ item }: { item: OnboardingScreenData }) => {
-    const { index, backgroundColor } = item;
+    const { index, backgroundColor, title, subtitle } = item;
     
     return (
       <View style={[styles.screen, { backgroundColor }]}>
         <View style={styles.contentContainer}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('@/assets/images/cardspace_logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
+          <View style={styles.headerContainer}>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.subtitle}>{subtitle}</Text>
           </View>
           
-          <View style={styles.formContainer}>
-            {index === 1 && (
-              <View style={styles.inputContainer}>
-                <InputField
-                  label="Full Name"
-                  value={fullName}
-                  onChangeText={setFullName}
-                  placeholder="Enter your full name"
-                  autoCapitalize="words"
-                />
-              </View>
-            )}
-            
-            {index === 2 && (
-              <View style={styles.inputContainer}>
-                <InputField
-                  label="Phone Number"
-                  value={phoneNumber}
-                  onChangeText={setPhoneNumber}
-                  placeholder="Enter your phone number"
-                  keyboardType="phone-pad"
-                />
-              </View>
-            )}
-            
-            {index === 3 && (
-              <View style={styles.inputContainer}>
-                <InputField
-                  label="Email Address"
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="Enter your email address"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-              </View>
-            )}
-            
-            <Button 
-              title={step === 3 ? 'Complete Setup' : 'Continue'}
-              variant="primary"
-              fullWidth={true}
-              loading={loading}
-              onPress={handleContinue}
-              disabled={
-                (step === 1 && !fullName) || 
-                (step === 2 && !phoneNumber) ||
-                (step === 3 && !email) ||
-                loading || 
-                !isLoaded
-              }
-            />
-            
-            <Button 
-              title="Skip for now"
-              variant="outline"
-              fullWidth={true}
-              onPress={handleSkip}
-            />
+          <View style={styles.imageContainer}>
+            {renderImageForScreen(index)}
           </View>
+          
+          {index === 3 && (
+            <View style={styles.buttonContainer}>
+              <Button 
+                title="Continue"
+                variant="primary"
+                fullWidth={true}
+                loading={loading}
+                onPress={handleContinue}
+                disabled={loading || !isLoaded}
+              />
+            </View>
+          )}
         </View>
       </View>
     );
   };
 
-  const onboardingData = [
-    { index: 1, backgroundColor: '#D0F9F6' },
-    { index: 2, backgroundColor: '#FFEBF0' },
-    { index: 3, backgroundColor: '#F0F3FC' },
-  ];
-
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-    >
+    <View style={[styles.container, { backgroundColor: getCurrentBackgroundColor() }]}>
       <View style={styles.progressContainer}>
         <View style={[styles.progressIndicator, step >= 1 ? styles.activeProgress : {}]} />
         <View style={[styles.progressIndicator, step >= 2 ? styles.activeProgress : {}]} />
@@ -189,11 +187,11 @@ export default function OnboardingScreen() {
           index,
         })}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<StylesProps>({
   container: {
     flex: 1,
   },
@@ -204,16 +202,46 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
-  logoContainer: {
+  headerContainer: {
+    marginTop: 20,
     alignItems: 'center',
-    marginBottom: 32,
   },
-  logo: {
-    width: 120,
-    height: 120,
-    marginVertical: 16,
+  title: {
+    ...Fonts.title,
+    fontSize: 28,
+    textAlign: 'center',
+    marginBottom: 12,
+    color: Theme.colors.textPrimary,
+    lineHeight: 34,
+    paddingHorizontal: 20,
+  },
+  subtitle: {
+    ...Fonts.regular,
+    fontSize: 16,
+    textAlign: 'center',
+    color: Theme.colors.textSecondary,
+    paddingHorizontal: 20,
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 40,
+  },
+  imagePlaceholder: {
+    width: width * 0.7,
+    height: width * 0.7,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 20,
+  },
+  placeholderCircle: {
+    width: width * 0.5,
+    height: width * 0.5,
+    borderRadius: width * 0.25,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -232,16 +260,9 @@ const styles = StyleSheet.create({
   activeProgress: {
     backgroundColor: Theme.colors.style_07,
   },
-  formContainer: {
+  buttonContainer: {
     width: '100%',
-  },
-  inputContainer: {
-    marginBottom: 24,
-  },
-  inputLabel: {
-    ...Fonts.bold,
-    fontSize: 16,
-    marginBottom: 8,
-    color: Theme.colors.textPrimary,
+    marginTop: 20,
+    marginBottom: 20,
   },
 }); 
