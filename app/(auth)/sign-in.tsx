@@ -1,6 +1,6 @@
 import { useSignIn } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
-import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView, ImageBackground } from 'react-native';
 import React from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { useOAuth } from '@clerk/clerk-expo';
@@ -65,7 +65,10 @@ export default function SignInScreen() {
       
       if (result && result.createdSessionId) {
         await setActive({ session: result.createdSessionId });
-        router.replace('/');
+        
+        // For simplicity, always redirect to onboarding for OAuth sign-ins
+        // In a production app, you would use a more robust method to determine if this is a new user
+        router.replace('/onboarding');
       }
     } catch (err) {
       console.error('OAuth error:', err);
@@ -83,7 +86,10 @@ export default function SignInScreen() {
       
       if (result && result.createdSessionId) {
         await setActive({ session: result.createdSessionId });
-        router.replace('/');
+        
+        // For simplicity, always redirect to onboarding for OAuth sign-ins
+        // In a production app, you would use a more robust method to determine if this is a new user
+        router.replace('/onboarding');
       }
     } catch (err) {
       console.error('OAuth error:', err);
@@ -93,100 +99,111 @@ export default function SignInScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    <ImageBackground 
+      source={require('@/assets/images/bg.png')} 
+      style={styles.backgroundImage}
+      resizeMode="cover"
     >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
-        bounces={true}
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View style={styles.titleContainer}>
-          <Image 
-            source={require('@/assets/images/cardspace_logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.title}>
-            Welcome to <Text style={styles.highlightText}>CardSpace</Text>
-          </Text>
-          <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
-        </View>
-        
-        <View style={styles.oauthContainer}>
-          <GoogleButton 
-            onPress={onGooglePress}
-            disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
-            loading={oauthLoading}
-            fullWidth
-          />
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+        >
+          <View style={styles.titleContainer}>
+            <Image 
+              source={require('@/assets/images/cardspace_logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>
+              Welcome to <Text style={styles.highlightText}>CardSpace</Text>
+            </Text>
+            <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
+          </View>
           
-          {Platform.OS === 'ios' && (
-            <AppleButton 
-              onPress={onApplePress}
-              disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+          <View style={styles.oauthContainer}>
+            <GoogleButton 
+              onPress={onGooglePress}
+              disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
               loading={oauthLoading}
               fullWidth
             />
-          )}
-          
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>Or you can also Sign in with your email </Text>
-            <View style={styles.dividerLine} />
-          </View>
-        </View>
-        
-        <View style={styles.inputContainer}>
-          <InputField
-            label="Email"
-            autoCapitalize="none"
-            value={emailAddress}
-            placeholder="your@email.com"
-            onChangeText={setEmailAddress}
-            keyboardType="email-address"
-          />
-          
-          <InputField
-            label="Password"
-            value={password}
-            placeholder="Your password"
-            secureTextEntry={true}
-            onChangeText={setPassword}
-          />
-          
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={onSignInPress}
-            disabled={!emailAddress || !password || loading || !isLoaded}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Continue</Text>
+            
+            {Platform.OS === 'ios' && (
+              <AppleButton 
+                onPress={onApplePress}
+                disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+                loading={oauthLoading}
+                fullWidth
+              />
             )}
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account?</Text>
-          <Link href="/sign-up" asChild>
-            <TouchableOpacity>
-              <Text style={styles.footerLink}>Sign Up</Text>
+            
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>Or you can also Sign in with your email </Text>
+              <View style={styles.dividerLine} />
+            </View>
+          </View>
+          
+          <View style={styles.inputContainer}>
+            <InputField
+              label="Email"
+              autoCapitalize="none"
+              value={emailAddress}
+              placeholder="your@email.com"
+              onChangeText={setEmailAddress}
+              keyboardType="email-address"
+            />
+            
+            <InputField
+              label="Password"
+              value={password}
+              placeholder="Your password"
+              secureTextEntry={true}
+              onChangeText={setPassword}
+            />
+            
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={onSignInPress}
+              disabled={!emailAddress || !password || loading || !isLoaded}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Continue</Text>
+              )}
             </TouchableOpacity>
-          </Link>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          </View>
+          
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account?</Text>
+            <Link href="/sign-up" asChild>
+              <TouchableOpacity>
+                <Text style={styles.footerLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,

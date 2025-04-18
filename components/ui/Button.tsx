@@ -75,8 +75,8 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    height: 50,
-    borderRadius: Theme.borderRadius.md,
+    height: 56,
+    borderRadius: Theme.borderRadius.round,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Theme.spacing.lg,

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView, ImageBackground } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -72,7 +72,7 @@ export default function SignUpScreen() {
       if (signUpAttempt.status === 'complete') {
         await setActive({ session: signUpAttempt.createdSessionId });
         
-        // Navigate to onboarding instead of home
+        // Navigate to onboarding in the protected folder
         router.replace('/onboarding');
       } else {
         // If the status is not complete, check why. User may need to
@@ -97,7 +97,9 @@ export default function SignUpScreen() {
       
       if (result && result.createdSessionId) {
         setActive({ session: result.createdSessionId });
-        router.replace('/');
+        
+        // Navigate to onboarding instead of home
+        router.replace('/onboarding');
       }
     } catch (err) {
       console.error('OAuth error:', err);
@@ -115,7 +117,9 @@ export default function SignUpScreen() {
       
       if (result && result.createdSessionId) {
         setActive({ session: result.createdSessionId });
-        router.replace('/');
+        
+        // Navigate to onboarding instead of home
+        router.replace('/onboarding');
       }
     } catch (err) {
       console.error('OAuth error:', err);
@@ -126,6 +130,67 @@ export default function SignUpScreen() {
 
   if (pendingVerification) {
     return (
+      <ImageBackground 
+        source={require('@/assets/images/bg.png')} 
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        <KeyboardAvoidingView 
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={true}
+            bounces={true}
+          >
+            <View style={styles.titleContainer}>
+              <Image 
+                source={require('@/assets/images/security.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <Text style={styles.title}>Verify your email</Text>
+              
+              <Text style={styles.subtitle}>
+                For added security, verify your code. Enter the 6 digit code that was sent to:
+              </Text>
+              <Text style={styles.emailText}>{emailAddress}</Text>
+            </View>
+            
+            <View style={styles.inputContainer}>
+              <CodeInput
+                value={code}
+                onChange={setCode}
+                autoFocus={true}
+                length={6}
+              />
+              
+              <TouchableOpacity 
+                style={styles.button} 
+                onPress={onVerifyPress}
+                disabled={code.length !== 6 || loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Verify</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
+    );
+  }
+
+  return (
+    <ImageBackground 
+      source={require('@/assets/images/bg.png')} 
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
       <KeyboardAvoidingView 
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -138,138 +203,94 @@ export default function SignUpScreen() {
         >
           <View style={styles.titleContainer}>
             <Image 
-              source={require('@/assets/images/security.png')}
+              source={require('@/assets/images/cardspace_logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.title}>Verify your email</Text>
-            
-            <Text style={styles.subtitle}>
-              For added security, verify your code. Enter the 6 digit code that was sent to:
+            <Text style={styles.title}>
+              Sign up for <Text style={styles.highlightText}>CardSpace</Text>
             </Text>
-            <Text style={styles.emailText}>{emailAddress}</Text>
+            <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
+          </View>
+          
+          <View style={styles.oauthContainer}>
+            <GoogleButton 
+              onPress={onGooglePress}
+              disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
+              loading={oauthLoading}
+              fullWidth
+            />
+            
+            {Platform.OS === 'ios' && (
+              <AppleButton 
+                onPress={onApplePress}
+                disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
+                loading={oauthLoading}
+                fullWidth
+              />
+            )}
+            
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>Or you can also Sign up with your email </Text>
+              <View style={styles.dividerLine} />
+            </View>
           </View>
           
           <View style={styles.inputContainer}>
-            <CodeInput
-              value={code}
-              onChange={setCode}
-              autoFocus={true}
-              length={6}
+            <InputField
+              label="Email"
+              autoCapitalize="none"
+              value={emailAddress}
+              placeholder="your@email.com"
+              onChangeText={setEmailAddress}
+              keyboardType="email-address"
+            />
+            
+            <InputField
+              label="Password"
+              value={password}
+              placeholder="Your secure password"
+              secureTextEntry={true}
+              onChangeText={setPassword}
             />
             
             <TouchableOpacity 
               style={styles.button} 
-              onPress={onVerifyPress}
-              disabled={code.length !== 6 || loading}
+              onPress={onSignUpPress}
+              disabled={!emailAddress || !password || loading || !isLoaded}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>Verify</Text>
+                <Text style={styles.buttonText}>Continue</Text>
               )}
             </TouchableOpacity>
           </View>
+          
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account?</Text>
+            <Link href="/sign-in" asChild>
+              <TouchableOpacity>
+                <Text style={styles.footerLink}>Sign In</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    );
-  }
-
-  return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-    >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
-        bounces={true}
-      >
-        <View style={styles.titleContainer}>
-          <Image 
-            source={require('@/assets/images/cardspace_logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.title}>
-            Sign up for <Text style={styles.highlightText}>CardSpace</Text>
-          </Text>
-          <Text style={styles.subtitle}>Imagine all your rewards programs together in one place.</Text>
-        </View>
-        
-        <View style={styles.oauthContainer}>
-          <GoogleButton 
-            onPress={onGooglePress}
-            disabled={oauthLoading || !isLoaded || !googleOAuth.startOAuthFlow}
-            loading={oauthLoading}
-            fullWidth
-          />
-          
-          {Platform.OS === 'ios' && (
-            <AppleButton 
-              onPress={onApplePress}
-              disabled={oauthLoading || !isLoaded || !appleOAuth.startOAuthFlow}
-              loading={oauthLoading}
-              fullWidth
-            />
-          )}
-          
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>Or you can also Sign up with your email </Text>
-            <View style={styles.dividerLine} />
-          </View>
-        </View>
-        
-        <View style={styles.inputContainer}>
-          <InputField
-            label="Email"
-            autoCapitalize="none"
-            value={emailAddress}
-            placeholder="your@email.com"
-            onChangeText={setEmailAddress}
-            keyboardType="email-address"
-          />
-          
-          <InputField
-            label="Password"
-            value={password}
-            placeholder="Your secure password"
-            secureTextEntry={true}
-            onChangeText={setPassword}
-          />
-          
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={onSignUpPress}
-            disabled={!emailAddress || !password || loading || !isLoaded}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Continue</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account?</Text>
-          <Link href="/sign-in" asChild>
-            <TouchableOpacity>
-              <Text style={styles.footerLink}>Sign In</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     marginTop: -32,

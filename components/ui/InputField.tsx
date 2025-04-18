@@ -82,13 +82,12 @@ const styles = StyleSheet.create({
   outlinedInput: {
     height: 56,
     borderWidth: 1,
-    borderRadius: Theme.borderRadius.lg,
+    borderRadius: Theme.borderRadius.round,
     paddingHorizontal: 15,
     fontSize: 16,
     paddingTop: 12,
     paddingBottom: 6,
     ...Fonts.regular,
-    borderColor: ColorPalette.style_05,
   },
   outlinedLabel: {
     position: 'absolute',

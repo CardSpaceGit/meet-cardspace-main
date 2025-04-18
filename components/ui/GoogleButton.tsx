@@ -77,8 +77,8 @@ export function GoogleButton({
 
 const styles = StyleSheet.create({
   button: {
-    height: 50,
-    borderRadius: Theme.borderRadius.xl,
+    height: 56,
+    borderRadius: Theme.borderRadius.round,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Theme.spacing.lg,
