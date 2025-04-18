@@ -9,6 +9,7 @@ import { Fonts } from '@/constants/Fonts';
 import { GoogleButton } from '@/components/ui/GoogleButton';
 import { AppleButton } from '@/components/ui/AppleButton';
 import { Theme } from '@/constants/Theme';
+import { CodeInput } from '@/components/ui/CodeInput';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -148,17 +149,17 @@ export default function SignUpScreen() {
           </View>
           
           <View style={styles.inputContainer}>
-            <InputField
+            <CodeInput
               value={code}
-              placeholder="Enter verification code"
-              onChangeText={setCode}
-              keyboardType="number-pad"
+              onChange={setCode}
+              autoFocus={true}
+              length={6}
             />
             
             <TouchableOpacity 
               style={styles.button} 
               onPress={onVerifyPress}
-              disabled={!code || loading}
+              disabled={code.length !== 6 || loading}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
@@ -269,10 +270,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   scrollContent: {
+    marginTop: -32,
     flexGrow: 1,
     padding: 20,
     justifyContent: 'center',
-    gap: 20,
+    gap: 0,
   },
   titleContainer: {
     alignItems: 'center',
