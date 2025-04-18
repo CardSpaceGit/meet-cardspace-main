@@ -135,15 +135,16 @@ export default function SignUpScreen() {
         >
           <View style={styles.titleContainer}>
             <Image 
-              source={require('@/assets/images/cardspace_logo.png')}
+              source={require('@/assets/images/security.png')}
               style={styles.logo}
               resizeMode="contain"
             />
             <Text style={styles.title}>Verify your email</Text>
             
             <Text style={styles.subtitle}>
-              We've sent a verification code to your email.
+              For added security, verify your code. Enter the 6 digit code that was sent to:
             </Text>
+            <Text style={styles.emailText}>{emailAddress}</Text>
           </View>
           
           <View style={styles.inputContainer}>
@@ -278,9 +279,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 16,
+    width: 280,
+    height: 280,
+    marginVertical: 16,
   },
   title: {
     ...Fonts.title,
@@ -297,10 +298,15 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...Fonts.regular,
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 0,
     textAlign: 'center',
     color: Theme.colors.textSecondary,
+  },
+  emailText: {
+    ...Fonts.regular,
+    fontSize: 14,
+    color: Theme.colors.style_06,
   },
   oauthContainer: {
     marginBottom: 0,
@@ -354,7 +360,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 0,
-    marginBottom: 20,
+    marginBottom: 64,
   },
   footerText: {
     color: '#666',

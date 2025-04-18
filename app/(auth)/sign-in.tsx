@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 120,
-    marginBottom: 16,
+    marginVertical: 16,
   },
   title: {
     ...Fonts.title,
@@ -276,6 +276,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 0,
+    marginBottom: 64,
   },
   footerText: {
     color: '#666',
