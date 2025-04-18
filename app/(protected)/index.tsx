@@ -19,7 +19,7 @@ export default function ProtectedHome() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome!</Text>
+      <Text style={styles.title}>Welcome!!!</Text>
       
       <View style={styles.card}>
         <Text style={styles.greeting}>

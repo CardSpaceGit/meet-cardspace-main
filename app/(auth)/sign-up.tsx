@@ -68,10 +68,12 @@ export default function SignUpScreen() {
       });
 
       // If verification was completed, set the session to active
-      // and redirect the user
+      // and redirect the user to onboarding
       if (signUpAttempt.status === 'complete') {
         await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace('/');
+        
+        // Navigate to onboarding instead of home
+        router.replace('/onboarding');
       } else {
         // If the status is not complete, check why. User may need to
         // complete further steps.
@@ -351,7 +353,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 0,
+    marginBottom: 16,
   },
   buttonText: {
     color: '#fff',
