@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, Image, ScrollView, KeyboardAvoidingView, ImageBackground, Alert } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, Stack } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useOAuth } from '@clerk/clerk-expo';
 import { InputField } from '@/components/ui/InputField';
@@ -145,6 +145,7 @@ export default function SignUpScreen() {
         style={styles.backgroundImage}
         resizeMode="cover"
       >
+        <Stack.Screen options={{ headerShown: false }} />
         <KeyboardAvoidingView 
           style={styles.container}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -198,6 +199,7 @@ export default function SignUpScreen() {
       style={styles.backgroundImage}
       resizeMode="cover"
     >
+      <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView 
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -239,7 +241,7 @@ export default function SignUpScreen() {
             
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>Or you can also Sign up with your email </Text>
+              <Text style={styles.dividerText}>Or you can also sign up with your email </Text>
               <View style={styles.dividerLine} />
             </View>
           </View>
@@ -291,7 +293,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     marginTop: 0,
     flexGrow: 1,
-    padding: 20,
+    paddingHorizontal: 32,
     justifyContent: 'center',
     gap: 0,
   },
@@ -319,7 +321,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...Fonts.regular,
-    fontSize: 14,
+    fontSize: 16,
     marginBottom: 0,
     textAlign: 'center',
     color: Theme.colors.textSecondary,
@@ -357,11 +359,11 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     marginHorizontal: 10,
-    color: '#666',
+    color: Theme.colors.textPrimary,
     ...Fonts.regular,
   },
   inputContainer: {
-    marginBottom: 0,
+    marginBottom: 16,
     rowGap: 4,
   },
   button: {
@@ -384,14 +386,14 @@ const styles = StyleSheet.create({
     marginBottom: 64,
   },
   footerText: {
-    color: '#666',
+    color: Theme.colors.textPrimary,
     marginRight: 5,
     ...Fonts.regular,
-    fontSize: 14,
+    fontSize: 16,
   },
   footerLink: {
-    color: '#6c47ff',
+    color: Theme.colors.style_06,
     ...Fonts.bold,
-    fontSize: 14,
+    fontSize: 16,
   },
 }); 

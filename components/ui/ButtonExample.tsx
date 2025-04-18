@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     marginTop: Theme.spacing.lg,
     marginBottom: Theme.spacing.sm,

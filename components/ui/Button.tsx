@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   button: {
-    height: 56,
+    height:48,
     borderRadius: Theme.borderRadius.round,
     justifyContent: 'center',
     alignItems: 'center',
@@ -210,11 +210,11 @@ const styles = StyleSheet.create({
   text: {
     fontSize: Theme.text.body.fontSize,
     textAlign: 'center',
-    fontWeight: 'bold',
+    fontWeight: 'regular',
   },
   gradient: {
     width: '100%',
-    height: 56,
+    height:48,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Theme.spacing.lg,

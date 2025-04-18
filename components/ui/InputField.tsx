@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   outlinedInput: {
-    height: 56,
+    height: 48,
     borderWidth: 1,
     borderRadius: Theme.borderRadius.round,
     paddingHorizontal: 15,
