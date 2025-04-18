@@ -295,8 +295,8 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 120,
+    height: 120,
     marginVertical: 16,
   },
   title: {
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     color: Theme.colors.textPrimary,
     marginRight: 5,
     ...Fonts.regular,
-    fontSize: 14,
+    fontSize: 16,
   },
   footerLink: {
     color: Theme.colors.style_06,

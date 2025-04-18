@@ -19,6 +19,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import { Fonts } from '@/constants/Fonts';
 import { Theme } from '@/constants/Theme';
 import { Button } from '@/components/ui/Button';
+import { markOnboardingComplete } from '@/app/utils/authUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -95,18 +96,32 @@ export default function OnboardingScreen() {
     setLoading(true);
     
     try {
+      // Mark onboarding as completed
+      await markOnboardingComplete();
+      
       // Navigate to the protected index screen
       router.replace('/');
     } catch (err) {
       console.error('Onboarding error:', err);
+      // Still try to navigate even if there was an error saving the onboarding status
+      router.replace('/');
     } finally {
       setLoading(false);
     }
   };
   
-  const handleSkip = () => {
-    // Navigate to home without completing onboarding
-    router.replace('/');
+  const handleSkip = async () => {
+    try {
+      // Mark onboarding as completed even if user skips
+      await markOnboardingComplete();
+      
+      // Navigate to home without completing onboarding
+      router.replace('/');
+    } catch (err) {
+      console.error('Onboarding skip error:', err);
+      // Still try to navigate even if there was an error saving the onboarding status
+      router.replace('/');
+    }
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {

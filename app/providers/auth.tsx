@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { ClerkProvider } from '@clerk/clerk-expo';
 import { tokenCache } from '../utils/clerk';
-import { Alert } from 'react-native';
+import { Alert, View } from 'react-native';
 import { ENV, validateEnv } from '../config/env';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (!ENV.CLERK_PUBLISHABLE_KEY) {
-    return <>{children}</>; // Return children without Clerk to avoid crashing
+    return <View style={{ flex: 1 }}>{children}</View>; // Use View instead of fragment
   }
 
   return (

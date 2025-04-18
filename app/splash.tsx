@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Fonts } from '@/constants/Fonts';
 
@@ -7,10 +7,21 @@ export default function SplashScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    // Navigate to sign-in page after 4000ms
+    // Navigate to auth-loading after splash screen
+    // Give Android slightly more time
+    const splashDuration = Platform.OS === 'android' ? 6000 : 5000;
+    
     const timer = setTimeout(() => {
-      router.replace('/sign-in');
-    }, 5000);
+      try {
+        // Navigate to auth-loading instead of directly to sign-in
+        // This will handle proper routing based on auth state
+        router.replace('/auth-loading');
+      } catch (error) {
+        console.error('Navigation error from splash:', error);
+        // Fallback to sign-in if navigation fails
+        router.replace('/(auth)/sign-in');
+      }
+    }, splashDuration);
 
     return () => clearTimeout(timer);
   }, []);
@@ -43,8 +54,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 240,
+    height: 289,
     resizeMode: 'contain',
     marginBottom: 20,
   },
