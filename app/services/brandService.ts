@@ -1,12 +1,12 @@
 import { supabase } from '@/app/config/supabase';
-import { getBrandLogoUrl, uploadBrandLogo, generateBrandLogoFileName } from './storageService';
+import { getBrandCardUrl, uploadBrandCard, generateBrandCardFileName } from './storageService';
 import { Category } from './categoryService';
 
 export interface Brand {
   id: string;
   name: string;
   subtitle: string;
-  logo_url: string;
+  card_url: string;
   category: string; // Keep for backward compatibility
   category_id?: string; // New field linking to brand_categories table
   category_details?: Category; // Joined category data when available
@@ -141,11 +141,11 @@ export const getBrandById = async (brandId: string): Promise<Brand | null> => {
 };
 
 /**
- * Create a new brand with logo upload
+ * Create a new brand with card upload
  */
 export const createBrand = async (
   brandData: CreateBrandData,
-  logoFile?: Blob
+  cardFile?: Blob
 ): Promise<Brand | null> => {
   try {
     // First insert the brand data
@@ -158,7 +158,7 @@ export const createBrand = async (
         category_id: brandData.category_id,
         website_url: brandData.website_url || null,
         terms_and_conditions: brandData.terms_and_conditions || null,
-        logo_url: null // Will update this after upload
+        card_url: null // Will update this after upload
       }])
       .select()
       .single();
@@ -168,23 +168,23 @@ export const createBrand = async (
       throw error;
     }
     
-    // If we have a logo file, upload it
-    if (logoFile && data.id) {
-      const fileName = generateBrandLogoFileName(data.id, logoFile.type);
+    // If we have a card file, upload it
+    if (cardFile && data.id) {
+      const fileName = generateBrandCardFileName(data.id, cardFile.type);
       
-      // Upload the logo
-      const logoUrl = await uploadBrandLogo(logoFile, fileName);
+      // Upload the card
+      const cardUrl = await uploadBrandCard(cardFile, fileName);
       
-      // Update the brand with the logo URL
+      // Update the brand with the card URL
       const { data: updatedData, error: updateError } = await supabase
         .from('brands')
-        .update({ logo_url: logoUrl })
+        .update({ card_url: cardUrl })
         .eq('id', data.id)
         .select()
         .single();
       
       if (updateError) {
-        console.error('Error updating brand with logo URL:', updateError);
+        console.error('Error updating brand with card URL:', updateError);
         throw updateError;
       }
       

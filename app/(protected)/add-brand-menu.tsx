@@ -112,14 +112,20 @@ export default function AddBrandMenuScreen() {
       activeOpacity={0.7}
     >
       <Image 
-        source={{ uri: item.logo_url }}
-        style={styles.brandLogo}
+        source={{ uri: item.card_url }}
+        style={styles.brandImage}
         resizeMode="contain"
         defaultSource={require('@/assets/images/card-placeholder.png')}
       />
       <View style={styles.brandInfo}>
         <Text style={styles.brandName}>{item.name}</Text>
-        <Text style={styles.brandSubtitle}>{item.subtitle}</Text>
+        <Text 
+          style={styles.brandSubtitle}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {item.subtitle}
+        </Text>
       </View>
       <Image 
         source={require('@/assets/images/right-info-arrow.png')}
@@ -309,7 +315,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: ColorPalette.style_03,
@@ -389,11 +395,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderBottomColor: ColorPalette.style_03,
     borderBottomWidth: 1,
   },
-  brandLogo: {
+  brandImage: {
     width: 120,
     height: 56,
     borderRadius: 12,
