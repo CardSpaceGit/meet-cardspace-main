@@ -29,6 +29,9 @@ export default function ProtectedRoutesLayout() {
       <Stack.Screen name="onboarding" options={{ 
         headerShown: false 
       }} />
+      <Stack.Screen name="add-brand-menu" options={{ 
+        headerShown: false 
+      }} />
     </Stack>
   );
 } 

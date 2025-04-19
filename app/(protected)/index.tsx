@@ -31,8 +31,8 @@ export default function ProtectedHome() {
   };
 
   const handleAddCard = () => {
-    // Navigate to add card screen
-    console.log('Add a card');
+    // Navigate to add brand menu screen
+    router.push('/(protected)/add-brand-menu');
   };
 
   return (

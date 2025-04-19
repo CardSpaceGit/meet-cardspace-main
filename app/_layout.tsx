@@ -3,14 +3,14 @@ import { useFonts } from 'expo-font';
 import { Stack, SplashScreen as ExpoSplashScreen } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { ClerkProvider } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
-import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text, Alert } from 'react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { ENV } from './config/env';
+import { ENV, validateEnv } from './config/env';
 import { Fonts } from '@/constants/Fonts';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -28,6 +28,7 @@ function GlobalLoadingScreen() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [envValidated, setEnvValidated] = useState(false);
   const [loaded] = useFonts({
     // Load Century Gothic fonts
     'CenturyGothic': require('../assets/fonts/Century Gothic.otf'),
@@ -38,13 +39,32 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  // Validate environment variables on app startup
   useEffect(() => {
-    if (loaded) {
+    const { isValid, missingVars } = validateEnv();
+    
+    if (!isValid) {
+      console.error('Environment validation failed! Missing variables:', missingVars);
+      Alert.alert(
+        'Configuration Error',
+        `Missing environment variables: ${missingVars.join(', ')}. Please check your .env file.`
+      );
+    } else {
+      console.log('Environment validation successful!');
+      console.log('Supabase URL:', ENV.SUPABASE_URL);
+      console.log('Supabase Key exists:', !!ENV.SUPABASE_ANON_KEY);
+    }
+    
+    setEnvValidated(true);
+  }, []);
+
+  useEffect(() => {
+    if (loaded && envValidated) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, envValidated]);
 
-  if (!loaded) {
+  if (!loaded || !envValidated) {
     return <GlobalLoadingScreen />;
   }
 
