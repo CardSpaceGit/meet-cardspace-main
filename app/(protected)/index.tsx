@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -10,7 +10,10 @@ import {
   SafeAreaView,
   Dimensions,
   ImageBackground,
-  Alert
+  Alert,
+  Animated,
+  Easing,
+  RefreshControl
 } from 'react-native';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
@@ -20,12 +23,149 @@ import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { clearOnboardingStatus } from '@/app/utils/authUtils';
 
+// Inspired by: https://github.com/codrops/StackMotionHoverEffects
+
 const { width, height } = Dimensions.get('window');
 
 export default function ProtectedHome() {
   const { signOut } = useAuth();
   const { user } = useUser();
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Animation values for stacked card effect
+  const cardScale = useRef(new Animated.Value(0.5)).current;
+  const cardOpacity = useRef(new Animated.Value(0)).current;
+  
+  // Values for colored stack cards behind the main card
+  const stackCard1Opacity = useRef(new Animated.Value(0)).current;
+  const stackCard1Scale = useRef(new Animated.Value(0.3)).current;
+  const stackCard1Rotate = useRef(new Animated.Value(-15)).current;
+  
+  const stackCard2Opacity = useRef(new Animated.Value(0)).current;
+  const stackCard2Scale = useRef(new Animated.Value(0.3)).current;
+  const stackCard2Rotate = useRef(new Animated.Value(10)).current;
+  
+  const stackCard3Opacity = useRef(new Animated.Value(0)).current;
+  const stackCard3Scale = useRef(new Animated.Value(0.3)).current;
+  const stackCard3Rotate = useRef(new Animated.Value(-5)).current;
+
+  // Animation function to reuse for both initial render and refresh
+  const playCardAnimation = () => {
+    // Reset animation values to starting positions
+    cardScale.setValue(0.5);
+    cardOpacity.setValue(0);
+    stackCard1Opacity.setValue(0);
+    stackCard1Scale.setValue(0.3);
+    stackCard1Rotate.setValue(-15);
+    stackCard2Opacity.setValue(0);
+    stackCard2Scale.setValue(0.3);
+    stackCard2Rotate.setValue(10);
+    stackCard3Opacity.setValue(0);
+    stackCard3Scale.setValue(0.3);
+    stackCard3Rotate.setValue(-5);
+    
+    // Start the animation sequence with faster durations
+    Animated.sequence([
+      // First show background stack cards in sequence with slight delays
+      Animated.parallel([
+        Animated.timing(stackCard1Opacity, {
+          toValue: 0.8,
+          duration: 200, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.timing(stackCard1Scale, {
+          toValue: 0.85,
+          duration: 250, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.timing(stackCard1Rotate, {
+          toValue: -6,
+          duration: 250, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        })
+      ]),
+      
+      Animated.parallel([
+        Animated.timing(stackCard2Opacity, {
+          toValue: 0.9,
+          duration: 200, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.timing(stackCard2Scale, {
+          toValue: 0.9,
+          duration: 250, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.timing(stackCard2Rotate, {
+          toValue: 4,
+          duration: 250, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        })
+      ]),
+      
+      Animated.parallel([
+        Animated.timing(stackCard3Opacity, {
+          toValue: 1,
+          duration: 200, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.timing(stackCard3Scale, {
+          toValue: 0.95,
+          duration: 250, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.timing(stackCard3Rotate, {
+          toValue: -2,
+          duration: 250, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        })
+      ]),
+      
+      // Finally animate in the main card
+      Animated.parallel([
+        Animated.timing(cardOpacity, {
+          toValue: 1,
+          duration: 200, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.spring(cardScale, {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 9,
+          tension: 100 // Increased tension for faster spring
+        })
+      ])
+    ]).start();
+  };
+
+  // Handle refresh action
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    
+    // Play animation immediately, with shorter timeout
+    playCardAnimation();
+    
+    // Hide refreshing indicator after animation completes
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 800); // Shorter delay matching faster animation
+  }, []);
+
+  useEffect(() => {
+    // Play animation on initial render
+    playCardAnimation();
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -81,15 +221,90 @@ export default function ProtectedHome() {
           bounces={true}
           alwaysBounceVertical={true}
           scrollEnabled={true}
-        >
-          {/* Card placeholder section */}
-          <TouchableOpacity style={styles.cardPlaceholder} onPress={handleAddCard}>
-            <Image 
-              source={require('@/assets/images/card-placeholder.png')} 
-              style={styles.cardImage}
-              resizeMode="contain"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={Theme.colors.style_07}
+              colors={[Theme.colors.style_07]}
+              title="Pull to refresh..."
+              titleColor={Theme.colors.textSecondary}
             />
-          </TouchableOpacity>
+          }
+        >
+          {/* Card placeholder section with animated stack effect */}
+          <View style={styles.cardStack}>
+            {/* Background stack cards */}
+            <Animated.View style={[
+              styles.stackCard,
+              styles.stackCard1,
+              {
+                opacity: stackCard1Opacity,
+                transform: [
+                  { scale: stackCard1Scale },
+                  { rotate: stackCard1Rotate.interpolate({
+                      inputRange: [-15, 0],
+                      outputRange: ['-15deg', '0deg']
+                    })
+                  }
+                ]
+              }
+            ]} />
+            
+            <Animated.View style={[
+              styles.stackCard,
+              styles.stackCard2,
+              {
+                opacity: stackCard2Opacity,
+                transform: [
+                  { scale: stackCard2Scale },
+                  { rotate: stackCard2Rotate.interpolate({
+                      inputRange: [0, 10],
+                      outputRange: ['0deg', '10deg']
+                    })
+                  }
+                ]
+              }
+            ]} />
+            
+            <Animated.View style={[
+              styles.stackCard,
+              styles.stackCard3,
+              {
+                opacity: stackCard3Opacity,
+                transform: [
+                  { scale: stackCard3Scale },
+                  { rotate: stackCard3Rotate.interpolate({
+                      inputRange: [-5, 0],
+                      outputRange: ['-5deg', '0deg']
+                    })
+                  }
+                ]
+              }
+            ]} />
+            
+            {/* Main visible card */}
+            <TouchableOpacity 
+              style={styles.cardPlaceholder} 
+              onPress={handleAddCard}
+              activeOpacity={0.9}
+            >
+              <Animated.View style={{
+                opacity: cardOpacity,
+                transform: [{ scale: cardScale }],
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Image 
+                  source={require('@/assets/images/card-placeholder.png')} 
+                  style={styles.cardImage}
+                  resizeMode="contain"
+                />
+              </Animated.View>
+            </TouchableOpacity>
+          </View>
           
           {/* Welcome text section */}
           <View style={styles.welcomeTextContainer}>
@@ -152,14 +367,40 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingTop: Platform.OS === 'ios' ? 0 : 0, // Different padding based on platform
   },
-  cardPlaceholder: {
-    borderRadius: 20,
-    marginHorizontal: 20,
-    marginTop: Platform.OS === 'ios' ? 32 : 30,
-    padding: 20,
-    height: 180,
+  cardStack: {
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
+    marginHorizontal: 20,
+    marginTop: Platform.OS === 'ios' ? 32 : 30,
+    height: 220, // Increased height to accommodate the stack
+  },
+  stackCard: {
+    position: 'absolute',
+    width: 290,
+    height: 190,
+    borderRadius: 20,
+  },
+  stackCard1: {
+    backgroundColor: '#f14b5d', // Red tint
+    top: 10,
+  },
+  stackCard2: {
+    backgroundColor: '#8367de', // Purple tint
+    top: 5,
+  },
+  stackCard3: {
+    backgroundColor: '#36b5e3', // Blue tint
+    top: 0,
+  },
+  cardPlaceholder: {
+    position: 'absolute',
+    borderRadius: 20,
+    width: 314,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 4,
   },
   cardImage: {
     width: 314,

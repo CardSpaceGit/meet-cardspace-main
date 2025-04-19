@@ -23,6 +23,7 @@ import {
   fetchFeaturedCategories, 
   Category as CategoryType 
 } from '@/app/services/categoryService';
+import { CardAddModal } from '@/components/CardAddModal';
 
 export default function AddBrandMenuScreen() {
   const router = useRouter();
@@ -33,6 +34,10 @@ export default function AddBrandMenuScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [error, setError] = useState<string | null>(null);
+  
+  // Modal state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState<BrandType | null>(null);
 
   // Fetch brands and categories from Supabase
   useEffect(() => {
@@ -95,10 +100,24 @@ export default function AddBrandMenuScreen() {
   }, [searchQuery, selectedCategoryId, brands]); // Add brands as a dependency
 
   const handleBrandSelect = (brand: BrandType) => {
-    console.log('Selected brand:', brand);
-    // Navigate back to home or to a card creation screen with the selected brand
-    // router.push(...);
-    router.back();
+    setSelectedBrand(brand);
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
+
+  const handleScanBarcode = () => {
+    // Will implement barcode scanning in a future update
+    Alert.alert('Scan Barcode', 'Barcode scanning will be available in a future update.');
+    setModalVisible(false);
+  };
+
+  const handleManualEntry = () => {
+    // Will implement manual card entry in a future update
+    Alert.alert('Manual Entry', 'Manual card entry will be available in a future update.');
+    setModalVisible(false);
   };
 
   const handleGoBack = () => {
@@ -301,6 +320,15 @@ export default function AddBrandMenuScreen() {
           ListEmptyComponent={renderEmptyList}
         />
       )}
+
+      {/* Card Add Modal */}
+      <CardAddModal 
+        isVisible={modalVisible}
+        onClose={handleModalClose}
+        brand={selectedBrand}
+        onScanPress={handleScanBarcode}
+        onManualPress={handleManualEntry}
+      />
     </SafeAreaView>
   );
 }
