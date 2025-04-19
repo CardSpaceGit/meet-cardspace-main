@@ -101,14 +101,6 @@ export default function ProtectedHome() {
             </Text>
           </View>
           
-          {/* Debug button for onboarding reset - only in development */}
-          <TouchableOpacity 
-            style={styles.debugButton} 
-            onPress={resetOnboardingStatus}
-          >
-            <Text style={styles.debugButtonText}>Reset Onboarding (Dev Only)</Text>
-          </TouchableOpacity>
-          
           {/* Add extra padding at the bottom for scrolling past the tab bar */}
           <View style={styles.bottomPadding} />
         </ScrollView>
@@ -232,18 +224,5 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: Platform.OS === 'ios' ? 90 : 80, // Extra padding for iOS to account for home indicator
-  },
-  debugButton: {
-    backgroundColor: '#ffdddd',
-    padding: 10,
-    borderRadius: 8,
-    marginHorizontal: 16,
-    marginVertical: 16,
-    alignItems: 'center',
-  },
-  debugButtonText: {
-    ...Fonts.regular,
-    color: '#ff0000',
-    fontSize: 14,
   },
 }); 

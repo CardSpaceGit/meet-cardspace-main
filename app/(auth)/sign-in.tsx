@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   title: {
-    ...Fonts.title,
+    ...Fonts.regular,
     fontSize: 40,
     marginBottom: 8,
     textAlign: 'center',
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     lineHeight: 48,
   },
   highlightText: {
-    ...Fonts.title,
+    ...Fonts.regular,
     fontSize: 40,
     color: Theme.colors.style_06,
   },

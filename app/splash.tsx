@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import FastImage from 'react-native-fast-image';
 import { Fonts } from '@/constants/Fonts';
 import { Theme } from '@/constants/Theme';
 
@@ -28,9 +29,10 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
-      <Image 
+      <FastImage 
         source={require('../assets/images/splash.gif')} 
         style={styles.logo}
+        resizeMode={FastImage.resizeMode.contain}
       />
       <View style={styles.footer}>
         <Text style={styles.quote}>
@@ -53,7 +55,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 240,
     height: 289,
-    resizeMode: 'contain',
     marginBottom: 20,
   },
   title: {

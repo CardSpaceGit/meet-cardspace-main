@@ -38,7 +38,7 @@ export const Fonts = {
   // Helper functions
   get title() {
     return {
-      ...this.regular,
+      ...this.bold,
       fontSize: this.sizes.xxl,
     };
   },

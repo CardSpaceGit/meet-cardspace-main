@@ -121,6 +121,11 @@ export default function AddBrandMenuScreen() {
         <Text style={styles.brandName}>{item.name}</Text>
         <Text style={styles.brandSubtitle}>{item.subtitle}</Text>
       </View>
+      <Image 
+        source={require('@/assets/images/right-info-arrow.png')}
+        style={styles.rightArrow}
+        resizeMode="contain"
+      />
     </TouchableOpacity>
   );
 
@@ -381,6 +386,7 @@ const styles = StyleSheet.create({
   brandCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
@@ -388,14 +394,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   brandLogo: {
-    width: 96,
+    width: 120,
     height: 56,
-    borderRadius: 8,
-    backgroundColor: ColorPalette.style_04,
+    borderRadius: 12,
+    backgroundColor: ColorPalette.white,
   },
   brandInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 0,
+    marginRight: 8,
   },
   brandName: {
     ...Fonts.title,
@@ -407,6 +414,11 @@ const styles = StyleSheet.create({
     ...Fonts.regular,
     fontSize: 14,
     color: ColorPalette.textSecondary,
+  },
+  rightArrow: {
+    width: 24,
+    height: 24,
+    marginLeft: 8,
   },
   loadingContainer: {
     flex: 1,
