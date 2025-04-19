@@ -43,12 +43,12 @@ export default function AddBrandMenuScreen() {
         
         // Fetch brands and categories (start with featured categories for better UX)
         const [brandsData, categoriesData] = await Promise.all([
-          fetchBrands(),
+          fetchBrands(), // Fetch all brands without filters
           fetchFeaturedCategories()
         ]);
         
         setBrands(brandsData);
-        setFilteredBrands(brandsData);
+        setFilteredBrands(brandsData); // Explicitly set filtered brands to all brands initially
         setCategories(categoriesData);
       } catch (err) {
         console.error('Error loading data:', err);
@@ -78,6 +78,7 @@ export default function AddBrandMenuScreen() {
       } catch (err) {
         console.error('Error filtering data:', err);
         // Don't show error for filtering, just use what we have
+        setFilteredBrands(brands); // Ensure we still show all brands on error
       } finally {
         setIsLoading(false);
       }
@@ -91,7 +92,7 @@ export default function AddBrandMenuScreen() {
     return () => {
       clearTimeout(debounceTimeout);
     };
-  }, [searchQuery, selectedCategoryId]);
+  }, [searchQuery, selectedCategoryId, brands]); // Add brands as a dependency
 
   const handleBrandSelect = (brand: BrandType) => {
     console.log('Selected brand:', brand);
@@ -162,13 +163,17 @@ export default function AddBrandMenuScreen() {
               try {
                 setIsLoading(true);
                 setError(null);
+                // Reset filters when retrying to ensure user sees all brands
+                setSearchQuery('');
+                setSelectedCategoryId(null);
+                
                 const [brandsData, categoriesData] = await Promise.all([
-                  fetchBrands(),
+                  fetchBrands(), // Fetch all brands without filters
                   fetchFeaturedCategories()
                 ]);
                 
                 setBrands(brandsData);
-                setFilteredBrands(brandsData);
+                setFilteredBrands(brandsData); // Explicitly set filtered brands to all brands initially
                 setCategories(categoriesData);
               } catch (err) {
                 console.error('Error retrying data load:', err);
@@ -211,7 +216,7 @@ export default function AddBrandMenuScreen() {
           activeOpacity={0.7}
         >
           <Image 
-            source={require('@/assets/images/rightarrow.png')} 
+            source={require('@/assets/images/back.png')} 
             style={styles.backIcon}
             resizeMode="contain"
           />
@@ -241,6 +246,28 @@ export default function AddBrandMenuScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesList}
           ListEmptyComponent={renderEmptyCategories}
+          ListHeaderComponent={() => (
+            <TouchableOpacity
+              style={[
+                styles.categoryChip,
+                !selectedCategoryId && styles.selectedCategoryChip,
+                { borderColor: !selectedCategoryId ? ColorPalette.style_07 : ColorPalette.style_03 }
+              ]}
+              onPress={() => setSelectedCategoryId(null)}
+            >
+              <Text 
+                style={[
+                  styles.categoryChipText,
+                  !selectedCategoryId && [
+                    styles.selectedCategoryChipText,
+                    { color: '#FFFFFF' }
+                  ]
+                ]}
+              >
+                All Brands
+              </Text>
+            </TouchableOpacity>
+          )}
         />
       </View>
 
@@ -271,6 +298,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: ColorPalette.white,
+    paddingTop: 32,
   },
   header: {
     flexDirection: 'row',
@@ -285,9 +313,8 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   backIcon: {
-    width: 24,
-    height: 24,
-    transform: [{ rotate: '180deg' }], // Rotate right arrow to make it a left arrow
+    width: 32,
+    height: 32,
   },
   headerTitle: {
     ...Fonts.title,
@@ -304,12 +331,14 @@ const styles = StyleSheet.create({
     borderBottomColor: ColorPalette.style_03,
   },
   searchInput: {
-    height: 44,
+    height: 48,
     backgroundColor: ColorPalette.style_04,
-    borderRadius: 22,
+    borderRadius: 24,
     paddingHorizontal: 16,
     ...Fonts.regular,
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: ColorPalette.style_03,
   },
   categoriesContainer: {
     paddingVertical: 12,
@@ -336,7 +365,6 @@ const styles = StyleSheet.create({
   },
   selectedCategoryChip: {
     backgroundColor: ColorPalette.style_07,
-    borderColor: ColorPalette.style_07,
   },
   categoryChipText: {
     ...Fonts.regular,
@@ -347,8 +375,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   brandsList: {
-    padding: 16,
-    paddingBottom: 30, // Less bottom padding now that we don't have the nav
+    padding: 2,
     flexGrow: 1, // Allow content to grow if needed
   },
   brandCard: {
@@ -357,15 +384,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderBottomColor: ColorPalette.style_03,
+    borderBottomWidth: 1,
   },
   brandLogo: {
-    width: 56,
+    width: 96,
     height: 56,
     borderRadius: 8,
     backgroundColor: ColorPalette.style_04,
@@ -378,6 +401,7 @@ const styles = StyleSheet.create({
     ...Fonts.title,
     fontSize: 16,
     marginBottom: 4,
+    color: ColorPalette.textPrimary,
   },
   brandSubtitle: {
     ...Fonts.regular,
