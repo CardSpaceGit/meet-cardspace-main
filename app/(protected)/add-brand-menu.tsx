@@ -109,8 +109,15 @@ export default function AddBrandMenuScreen() {
   };
 
   const handleScanBarcode = () => {
-    // Will implement barcode scanning in a future update
-    Alert.alert('Scan Barcode', 'Barcode scanning will be available in a future update.');
+    if (selectedBrand) {
+      router.push({
+        pathname: "/(protected)/scan-barcode" as any,
+        params: { 
+          brandId: selectedBrand.id,
+          brandName: selectedBrand.name
+        }
+      });
+    }
     setModalVisible(false);
   };
 

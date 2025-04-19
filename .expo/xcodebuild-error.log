@@ -1,0 +1,7 @@
+** BUILD FAILED **
+
+
+The following build commands failed:
+	CompileC /Users/nqoe/Library/Developer/Xcode/DerivedData/meetcardspace-grewvachfqpacpevhqthkuiypidn/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/ReactCodegen.build/Objects-normal/x86_64/ShadowNodes-16cc534e93e964f6eb7e4e0359b2197b.o /Users/nqoe/Downloads/Github/meet-cardspace-main/ios/build/generated/ios/react/renderer/components/safeareacontext/ShadowNodes.cpp normal x86_64 c++ com.apple.compilers.llvm.clang.1_0.compiler (in target 'ReactCodegen' from project 'Pods')
+	Building workspace meetcardspace with scheme meetcardspace and configuration Debug
+(2 failures)

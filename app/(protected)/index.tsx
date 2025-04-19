@@ -22,6 +22,7 @@ import { Fonts } from '@/constants/Fonts';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { clearOnboardingStatus } from '@/app/utils/authUtils';
+import { ColorPalette } from '@/constants/Colors';
 
 // Inspired by: https://github.com/codrops/StackMotionHoverEffects
 
@@ -49,6 +50,10 @@ export default function ProtectedHome() {
   const stackCard3Opacity = useRef(new Animated.Value(0)).current;
   const stackCard3Scale = useRef(new Animated.Value(0.3)).current;
   const stackCard3Rotate = useRef(new Animated.Value(-5)).current;
+  
+  const stackCard4Opacity = useRef(new Animated.Value(0)).current;
+  const stackCard4Scale = useRef(new Animated.Value(0.3)).current;
+  const stackCard4Rotate = useRef(new Animated.Value(8)).current;
 
   // Animation function to reuse for both initial render and refresh
   const playCardAnimation = () => {
@@ -64,6 +69,9 @@ export default function ProtectedHome() {
     stackCard3Opacity.setValue(0);
     stackCard3Scale.setValue(0.3);
     stackCard3Rotate.setValue(-5);
+    stackCard4Opacity.setValue(0);
+    stackCard4Scale.setValue(0.3);
+    stackCard4Rotate.setValue(8);
     
     // Start the animation sequence with faster durations
     Animated.sequence([
@@ -125,6 +133,27 @@ export default function ProtectedHome() {
         }),
         Animated.timing(stackCard3Rotate, {
           toValue: -2,
+          duration: 250, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        })
+      ]),
+      
+      Animated.parallel([
+        Animated.timing(stackCard4Opacity, {
+          toValue: 1,
+          duration: 200, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.timing(stackCard4Scale, {
+          toValue: 0.97,
+          duration: 250, // Faster animation
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5))
+        }),
+        Animated.timing(stackCard4Rotate, {
+          toValue: 2,
           duration: 250, // Faster animation
           useNativeDriver: true,
           easing: Easing.out(Easing.back(1.5))
@@ -283,6 +312,22 @@ export default function ProtectedHome() {
               }
             ]} />
             
+            <Animated.View style={[
+              styles.stackCard,
+              styles.stackCard4,
+              {
+                opacity: stackCard4Opacity,
+                transform: [
+                  { scale: stackCard4Scale },
+                  { rotate: stackCard4Rotate.interpolate({
+                      inputRange: [0, 8],
+                      outputRange: ['0deg', '8deg']
+                    })
+                  }
+                ]
+              }
+            ]} />
+            
             {/* Main visible card */}
             <TouchableOpacity 
               style={styles.cardPlaceholder} 
@@ -373,7 +418,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 20,
     marginTop: Platform.OS === 'ios' ? 32 : 30,
-    height: 220, // Increased height to accommodate the stack
+    height: 240, // Increased height to accommodate the stack with 4 cards
   },
   stackCard: {
     position: 'absolute',
@@ -382,16 +427,20 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   stackCard1: {
-    backgroundColor: '#f14b5d', // Red tint
-    top: 10,
+    backgroundColor: ColorPalette.style_06, // Pink/purple
+    top: 20,
   },
   stackCard2: {
-    backgroundColor: '#8367de', // Purple tint
-    top: 5,
+    backgroundColor: ColorPalette.style_07, // Medium purple
+    top: 15,
   },
   stackCard3: {
-    backgroundColor: '#36b5e3', // Blue tint
-    top: 0,
+    backgroundColor: ColorPalette.style_10, // Salmon/coral
+    top: 10,
+  },
+  stackCard4: {
+    backgroundColor: ColorPalette.style_10[2], // Blue (#6698F8)
+    top: 5,
   },
   cardPlaceholder: {
     position: 'absolute',

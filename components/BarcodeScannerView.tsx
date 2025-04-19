@@ -12,17 +12,18 @@
  * Once fixed, you can restore the original BarcodeScannerView implementation.
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   Text, 
   View, 
   TouchableOpacity, 
   SafeAreaView,
-  Image,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { CameraView, Camera, BarcodeScanningResult } from 'expo-camera';
 import { Fonts } from '@/constants/Fonts';
 import { ColorPalette } from '@/constants/Colors';
 
@@ -35,28 +36,80 @@ export const BarcodeScannerView: React.FC<BarcodeScannerViewProps> = ({
   onClose,
   onBarCodeScanned
 }) => {
-  const handleMockScan = () => {
-    // Simulate scanning a mock barcode
-    onBarCodeScanned("1234567890123");
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanned, setScanned] = useState(false);
+
+  useEffect(() => {
+    const getCameraPermissions = async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+      
+      if (status !== 'granted') {
+        Alert.alert(
+          'Camera Permission',
+          'We need camera permission to scan barcodes',
+          [{ text: 'OK', onPress: onClose }]
+        );
+      }
+    };
+
+    getCameraPermissions();
+  }, []);
+
+  const handleBarCodeScanned = ({ type, data }: BarcodeScanningResult) => {
+    if (!scanned) {
+      setScanned(true);
+      console.log(`Bar code with type ${type} and data ${data} has been scanned!`);
+      onBarCodeScanned(data);
+    }
   };
+
+  if (hasPermission === null) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.placeholderText}>Requesting camera permission...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (hasPermission === false) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.placeholderText}>No access to camera</Text>
+          <TouchableOpacity 
+            style={styles.mockScanButton}
+            onPress={onClose}
+          >
+            <Text style={styles.mockScanButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Mock camera view with placeholder */}
-      <View style={styles.mockCameraView}>
-        <View style={styles.scanFrame}>
-          <Text style={styles.placeholderText}>Camera placeholder</Text>
-          <Text style={styles.placeholderSubtext}>
-            Barcode scanner functionality is currently unavailable
-          </Text>
-          
-          <TouchableOpacity 
-            style={styles.mockScanButton}
-            onPress={handleMockScan}
-          >
-            <Text style={styles.mockScanButtonText}>Simulate Scan</Text>
-          </TouchableOpacity>
-        </View>
+      <CameraView
+        style={styles.scannerContainer}
+        facing="back"
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        barcodeScannerSettings={{
+          barcodeTypes: [
+            'qr',
+            'code128',
+            'code39',
+            'ean13',
+            'ean8',
+            'upc_e'
+          ],
+        }}
+      />
+      
+      <View style={styles.overlay}>
+        <View style={styles.scanFrame} />
       </View>
       
       <View style={styles.headerContainer}>
@@ -71,9 +124,18 @@ export const BarcodeScannerView: React.FC<BarcodeScannerViewProps> = ({
       
       <View style={styles.instructionsContainer}>
         <Text style={styles.instructionsText}>
-          Native barcode scanner module not available
+          Position the barcode within the frame to scan
         </Text>
       </View>
+      
+      {scanned && (
+        <TouchableOpacity 
+          style={styles.scanAgainButton}
+          onPress={() => setScanned(false)}
+        >
+          <Text style={styles.scanAgainButtonText}>Scan Again</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };
@@ -83,9 +145,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
-  mockCameraView: {
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+  },
+  scannerContainer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#222',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -94,23 +165,13 @@ const styles = StyleSheet.create({
     height: 250,
     borderWidth: 2,
     borderColor: '#fff',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'transparent',
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
   placeholderText: {
     ...Fonts.bold,
     fontSize: 18,
     color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  placeholderSubtext: {
-    ...Fonts.regular,
-    fontSize: 14,
-    color: '#CCCCCC',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -161,5 +222,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     padding: 12,
     borderRadius: 8,
+  },
+  scanAgainButton: {
+    position: 'absolute',
+    bottom: 60,
+    alignSelf: 'center',
+    backgroundColor: ColorPalette.style_07,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+  },
+  scanAgainButtonText: {
+    ...Fonts.bold,
+    fontSize: 16,
+    color: '#FFFFFF',
   }
 }); 

@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mr.q.meetcardspace"
+      "bundleIdentifier": "com.mr.q.meetcardspace",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan barcodes on loyalty cards."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -38,7 +41,12 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-barcode-scanner"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to scan barcodes."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
