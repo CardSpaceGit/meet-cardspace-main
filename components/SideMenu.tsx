@@ -32,6 +32,8 @@ import {
   GestureDetector, 
   GestureHandlerRootView 
 } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS, clearOnboardingStatus } from '@/app/utils/authUtils';
 
 const { width } = Dimensions.get('window');
 const MENU_WIDTH = width * 0.9; // 80% of screen width
@@ -91,6 +93,14 @@ export function SideMenu({ isVisible, onClose }: SideMenuProps) {
   const handleSignOut = async () => {
     onClose();
     setTimeout(async () => {
+      // Clear onboarding status for the current user
+      try {
+        if (user?.id) {
+          await clearOnboardingStatus(user.id);
+        }
+      } catch (error) {
+        console.error('Error clearing onboarding status:', error);
+      }
       await signOut();
     }, 300);
   };

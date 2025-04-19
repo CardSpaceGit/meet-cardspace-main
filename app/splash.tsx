@@ -2,24 +2,24 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Fonts } from '@/constants/Fonts';
+import { Theme } from '@/constants/Theme';
 
 export default function SplashScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    // Navigate to auth-loading after splash screen
+    // Navigate to sign-up page after splash screen
     // Give Android slightly more time
     const splashDuration = Platform.OS === 'android' ? 6000 : 5000;
     
     const timer = setTimeout(() => {
       try {
-        // Navigate to auth-loading instead of directly to sign-in
-        // This will handle proper routing based on auth state
-        router.replace('/auth-loading');
+        // Navigate directly to sign-up page instead of auth-loading
+        router.replace('/(auth)/sign-up');
       } catch (error) {
         console.error('Navigation error from splash:', error);
-        // Fallback to sign-in if navigation fails
-        router.replace('/(auth)/sign-in');
+        // Fallback to sign-up if navigation fails
+        router.replace('/(auth)/sign-up');
       }
     }, splashDuration);
 
@@ -32,14 +32,11 @@ export default function SplashScreen() {
         source={require('../assets/images/splash.gif')} 
         style={styles.logo}
       />
-      <Text style={styles.title}>Welcome</Text>
-      <Text style={styles.subtitle}>to CardSpace</Text>
-      
       <View style={styles.footer}>
         <Text style={styles.quote}>
           "When something is important enough, you do it even if the odds are not in your favour."
         </Text>
-        <Text style={styles.copyright}>CardSpace © 2024.</Text>
+        <Text style={styles.copyright}>CardSpace © 2025.</Text>
       </View>
     </View>
   );
@@ -78,15 +75,15 @@ const styles = StyleSheet.create({
     right: 20,
   },
   quote: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 14,
+    color: Theme.colors.textPrimary,
     textAlign: 'center',
     marginBottom: 20,
     ...Fonts.italic,
   },
   copyright: {
     fontSize: 14,
-    color: '#666',
+    color: Theme.colors.textSecondary,
     textAlign: 'center',
     ...Fonts.regular,
   },

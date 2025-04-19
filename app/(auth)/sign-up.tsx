@@ -12,17 +12,21 @@ import { Theme } from '@/constants/Theme';
 import { CodeInput } from '@/components/ui/CodeInput';
 import { Button } from '@/components/ui/Button';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { handlePostAuthNavigation } from '@/app/utils/authUtils';
+import { useAuth } from '@clerk/clerk-expo';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
+  const { isSignedIn, userId } = useAuth();
   const router = useRouter();
 
   const googleOAuth = useOAuth({ strategy: "oauth_google" });
   const appleOAuth = useOAuth({ strategy: "oauth_apple" });
 
   const [emailAddress, setEmailAddress] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -39,6 +43,7 @@ export default function SignUpScreen() {
       // Start sign-up process using email only
       await signUp.create({
         emailAddress,
+        password,
       });
 
       // Send user an email with verification code
@@ -51,6 +56,11 @@ export default function SignUpScreen() {
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
+      Alert.alert(
+        'Sign Up Error',
+        'There was a problem creating your account. Please try again.',
+        [{ text: 'OK', style: 'default' }]
+      );
     } finally {
       setLoading(false);
     }
@@ -75,11 +85,13 @@ export default function SignUpScreen() {
       if (signUpAttempt.status === 'complete' && signUpAttempt.createdSessionId) {
         try {
           await setActive?.({ session: signUpAttempt.createdSessionId });
+          console.log("Email sign-up completed, created session");
           
-          // Navigate to auth-loading screen for smooth transition
-          router.replace('/auth-loading');
+          // Navigate directly to onboarding without intermediate loading screen
+          router.replace('/(protected)/onboarding');
         } catch (sessionErr) {
           console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
+          router.replace('/(protected)/onboarding');
         }
       } else if (signUpAttempt.status === 'missing_requirements') {
         // Special handling for missing_requirements status
@@ -88,7 +100,7 @@ export default function SignUpScreen() {
         // Show loading screen before navigation
         setLoading(true);
         
-        // Navigate to onboarding where the user can provide more information
+        // For missing requirements, go directly to onboarding
         router.replace('/(protected)/onboarding');
         
         Alert.alert(
@@ -128,12 +140,18 @@ export default function SignUpScreen() {
       
       if (result && result.createdSessionId) {
         await setActive?.({ session: result.createdSessionId });
+        console.log("Google OAuth sign-up completed, created session");
         
-        // Navigate to auth-loading for smooth transition
-        router.replace('/auth-loading');
+        // For sign-up flow, navigate directly to onboarding
+        // This avoids the intermediate loading screen
+        router.replace('/(protected)/onboarding');
       }
     } catch (err) {
       console.error('OAuth error:', err);
+      Alert.alert(
+        'Sign Up Error',
+        'There was a problem signing up with Google. Please try again or use email sign-up.'
+      );
     } finally {
       setGoogleLoading(false);
     }
@@ -148,12 +166,18 @@ export default function SignUpScreen() {
       
       if (result && result.createdSessionId) {
         await setActive?.({ session: result.createdSessionId });
+        console.log("Apple OAuth sign-up completed, created session");
         
-        // Navigate to auth-loading for smooth transition
-        router.replace('/auth-loading');
+        // For sign-up flow, navigate directly to onboarding
+        // This avoids the intermediate loading screen
+        router.replace('/(protected)/onboarding');
       }
     } catch (err) {
       console.error('OAuth error:', err);
+      Alert.alert(
+        'Sign Up Error',
+        'There was a problem signing up with Apple. Please try again or use email sign-up.'
+      );
     } finally {
       setAppleLoading(false);
     }

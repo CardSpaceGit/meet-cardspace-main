@@ -2,7 +2,6 @@ import { useAuth } from '@clerk/clerk-expo';
 import { Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { hasCompletedOnboarding } from './utils/authUtils';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function OAuthCallbackPage() {
@@ -20,16 +19,8 @@ export default function OAuthCallbackPage() {
           await new Promise(resolve => setTimeout(resolve, timeoutDuration));
           
           if (isSignedIn) {
-            // Check if the user has completed onboarding
-            const onboardingCompleted = await hasCompletedOnboarding();
-            
-            if (onboardingCompleted) {
-              // If user already completed onboarding, go to main app
-              router.replace('/');
-            } else {
-              // If first time user, go to onboarding
-              router.replace('/(protected)/onboarding');
-            }
+            // Navigate directly to protected area
+            router.replace('/(protected)');
           } else {
             // If user is not signed in (auth failed or was canceled), redirect to sign in
             router.replace('/(auth)/sign-in');

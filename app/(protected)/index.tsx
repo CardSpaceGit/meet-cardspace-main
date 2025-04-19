@@ -9,7 +9,8 @@ import {
   Platform,
   SafeAreaView,
   Dimensions,
-  ImageBackground
+  ImageBackground,
+  Alert
 } from 'react-native';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ import { Theme } from '@/constants/Theme';
 import { Fonts } from '@/constants/Fonts';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
+import { clearOnboardingStatus } from '@/app/utils/authUtils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,6 +35,34 @@ export default function ProtectedHome() {
   const handleAddCard = () => {
     // Navigate to add brand menu screen
     router.push('/(protected)/add-brand-menu');
+  };
+  
+  // Dev function to reset onboarding status for testing
+  const resetOnboardingStatus = async () => {
+    Alert.alert(
+      'Reset Onboarding',
+      'Are you sure you want to reset onboarding status? This is for testing only.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await clearOnboardingStatus(user?.id);
+              Alert.alert('Success', 'Onboarding status has been reset. Sign out and sign back in to see the onboarding screens again.');
+              console.log('Onboarding status reset for user ID:', user?.id);
+            } catch (error) {
+              console.error('Error resetting onboarding status:', error);
+              Alert.alert('Error', 'Failed to reset onboarding status.');
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -70,6 +100,14 @@ export default function ProtectedHome() {
               Just hit that plus button below and let the rewards party begin!
             </Text>
           </View>
+          
+          {/* Debug button for onboarding reset - only in development */}
+          <TouchableOpacity 
+            style={styles.debugButton} 
+            onPress={resetOnboardingStatus}
+          >
+            <Text style={styles.debugButtonText}>Reset Onboarding (Dev Only)</Text>
+          </TouchableOpacity>
           
           {/* Add extra padding at the bottom for scrolling past the tab bar */}
           <View style={styles.bottomPadding} />
@@ -194,5 +232,18 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: Platform.OS === 'ios' ? 90 : 80, // Extra padding for iOS to account for home indicator
+  },
+  debugButton: {
+    backgroundColor: '#ffdddd',
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginVertical: 16,
+    alignItems: 'center',
+  },
+  debugButtonText: {
+    ...Fonts.regular,
+    color: '#ff0000',
+    fontSize: 14,
   },
 }); 

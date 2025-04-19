@@ -12,11 +12,14 @@ import { Theme } from '@/constants/Theme';
 import { CodeInput } from '@/components/ui/CodeInput';
 import { Button } from '@/components/ui/Button';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { handlePostAuthNavigation } from '@/app/utils/authUtils';
+import { useAuth } from '@clerk/clerk-expo';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
+  const { isSignedIn, userId } = useAuth();
   const router = useRouter();
 
   const googleOAuth = useOAuth({ strategy: "oauth_google" });
@@ -70,11 +73,15 @@ export default function SignInScreen() {
       
       if (result.status === 'complete' && result.createdSessionId) {
         try {
+          // Set the active session
           await setActive?.({ session: result.createdSessionId });
-          // Navigate to auth-loading for smooth transition
-          router.replace('/auth-loading');
+          
+          // Navigate directly to protected index without intermediate loading screen
+          router.replace('/(protected)');
         } catch (sessionErr) {
           console.error("Session activation error:", JSON.stringify(sessionErr, null, 2));
+          // Still try to navigate
+          router.replace('/(protected)');
         }
       } else {
         const status = result.status || 'unknown';
@@ -99,13 +106,20 @@ export default function SignInScreen() {
       const result = await googleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
+        // Set the active session
         await setActive?.({ session: result.createdSessionId });
         
-        // Navigate to auth-loading for smooth transition
-        router.replace('/auth-loading');
+        // On Android, directly navigate to protected index without going through auth-loading
+        // This avoids showing the intermediate loading screen which can look bad on Android
+        console.log("Google OAuth sign-in successful, navigating directly to main app");
+        router.replace('/(protected)');
       }
     } catch (err) {
       console.error('OAuth error:', err);
+      Alert.alert(
+        'Sign In Error',
+        'There was a problem signing in with Google. Please try again or use email sign-in.'
+      );
     } finally {
       setGoogleLoading(false);
     }
@@ -119,13 +133,20 @@ export default function SignInScreen() {
       const result = await appleOAuth.startOAuthFlow();
       
       if (result && result.createdSessionId) {
+        // Set the active session
         await setActive?.({ session: result.createdSessionId });
         
-        // Navigate to auth-loading for smooth transition
-        router.replace('/auth-loading');
+        // On Android, directly navigate to protected index without going through auth-loading
+        // This avoids showing the intermediate loading screen which can look bad on Android
+        console.log("Apple OAuth sign-in successful, navigating directly to main app");
+        router.replace('/(protected)');
       }
     } catch (err) {
       console.error('OAuth error:', err);
+      Alert.alert(
+        'Sign In Error',
+        'There was a problem signing in with Apple. Please try again or use email sign-in.'
+      );
     } finally {
       setAppleLoading(false);
     }

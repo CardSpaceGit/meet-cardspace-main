@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -12,14 +12,19 @@ import {
   Image,
   ViewStyle,
   TextStyle,
-  ImageStyle
+  ImageStyle,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { Fonts } from '@/constants/Fonts';
 import { Theme } from '@/constants/Theme';
 import { Button } from '@/components/ui/Button';
-import { markOnboardingComplete } from '@/app/utils/authUtils';
+import { markOnboardingComplete, hasCompletedOnboarding, STORAGE_KEYS } from '@/app/utils/authUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -48,15 +53,121 @@ interface StylesProps {
   progressIndicator: ViewStyle;
   activeProgress: ViewStyle;
   buttonContainer: ViewStyle;
+  leftTouchArea: ViewStyle;
+  rightTouchArea: ViewStyle;
+  navigationHint: ViewStyle;
+  navigationHintText: TextStyle;
+  loadingOverlay: ViewStyle;
 }
 
 export default function OnboardingScreen() {
   const { isLoaded } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [navigating, setNavigating] = useState(false);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [showHint, setShowHint] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const flatListRef = useRef<FlatList>(null);
+  
+  // Check if user has already completed onboarding at component mount
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      if (user?.id) {
+        try {
+          setError(null);
+          const completed = await hasCompletedOnboarding(user.id);
+          if (completed) {
+            console.log('User has already completed onboarding, redirecting to home');
+            router.replace('/');
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking onboarding status:', error);
+          setError('Failed to check onboarding status. Please try again.');
+        }
+      } else {
+        // If no user ID is available, retry a few times before showing an error
+        if (retryCount < 3) {
+          console.log(`No user ID available yet, retrying... (${retryCount + 1}/3)`);
+          setRetryCount(retryCount + 1);
+          // Wait a moment and try again
+          setTimeout(() => {
+            setCheckingOnboarding(true);
+          }, 1000);
+          return;
+        } else {
+          setError('Unable to retrieve user information. Please try signing out and back in.');
+        }
+      }
+      setCheckingOnboarding(false);
+    };
+    
+    if (checkingOnboarding) {
+      checkOnboardingStatus();
+    }
+  }, [user?.id, retryCount, checkingOnboarding, router]);
+  
+  // Hide the hint after a few seconds
+  useEffect(() => {
+    if (showHint) {
+      const timer = setTimeout(() => {
+        setShowHint(false);
+      }, 3000); // Hide after 3 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showHint]);
+  
+  // Show loading while checking onboarding status
+  if (checkingOnboarding) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8F8F8' }}>
+        <ActivityIndicator size="large" color={Theme.colors.style_07} />
+        <Text style={{ marginTop: 16, ...Fonts.regular, color: Theme.colors.textSecondary }}>
+          Checking onboarding status...
+        </Text>
+      </View>
+    );
+  }
+  
+  // Show error screen if there's an error
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8F8F8', padding: 20 }}>
+        <Text style={{ ...Fonts.regular, color: 'red', marginBottom: 20, textAlign: 'center' }}>
+          {error}
+        </Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: Theme.colors.style_07,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            borderRadius: 8,
+          }}
+          onPress={() => {
+            setRetryCount(0);
+            setCheckingOnboarding(true);
+          }}
+        >
+          <Text style={{ ...Fonts.regular, color: 'white' }}>Retry</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            marginTop: 16,
+            paddingVertical: 8,
+          }}
+          onPress={() => router.replace('/')}
+        >
+          <Text style={{ ...Fonts.regular, color: Theme.colors.style_07 }}>Skip & Continue</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   
   const onboardingData = [
     { 
@@ -65,8 +176,8 @@ export default function OnboardingScreen() {
       title: 'Save time, save money, save yourself from loyalty card chaos! 🕒💸😅',
       subtitle: 'No more fumbling through your wallet for the right card. 🚀🤑',
       image: require('@/assets/images/onboarding01.png'),
-      imageWidth: 500,
-      imageHeight: 500
+      imageWidth: 480,
+      imageHeight: 540,
     },
     { 
       index: 2, 
@@ -83,8 +194,8 @@ export default function OnboardingScreen() {
       title: 'Slow down, speedy shopper! 🐌🛍️',
       subtitle: 'Access all your loyalty rewards in one app and make shopping a breeze. 🌬️🛒',
       image: require('@/assets/images/onboarding03.png'),
-      imageWidth: 480,
-      imageHeight: 480
+      imageWidth: 520,
+      imageHeight: 500
     },
   ];
   
@@ -96,15 +207,74 @@ export default function OnboardingScreen() {
     setLoading(true);
     
     try {
-      // Mark onboarding as completed
-      await markOnboardingComplete();
+      // Set navigating state to show full-screen loading indicator
+      setNavigating(true);
+      
+      // Get the user ID to ensure it's properly saved
+      const userId = user?.id;
+      console.log('Completing onboarding for user:', userId);
+      
+      if (!userId) {
+        console.warn('No user ID available when completing onboarding. Using global flag only.');
+        Alert.alert(
+          'Warning',
+          'Unable to save your onboarding status to your account. You may see this screen again next time you sign in.',
+          [{ text: 'Continue Anyway', style: 'default' }]
+        );
+      }
+      
+      // Mark onboarding as completed with user ID
+      await markOnboardingComplete(userId);
+      
+      try {
+        // Double check that it was saved correctly
+        if (userId) {
+          const userSpecificKey = `${STORAGE_KEYS.USER_ONBOARDING_PREFIX}${userId}`;
+          const userValue = await AsyncStorage.getItem(userSpecificKey);
+          console.log(`Verified user key ${userSpecificKey} = ${userValue}`);
+          
+          if (userValue !== 'true') {
+            throw new Error('Failed to save user-specific onboarding status');
+          }
+        }
+        
+        const globalValue = await AsyncStorage.getItem(STORAGE_KEYS.HAS_COMPLETED_ONBOARDING);
+        console.log(`Verified global key ${STORAGE_KEYS.HAS_COMPLETED_ONBOARDING} = ${globalValue}`);
+        
+        if (globalValue !== 'true') {
+          throw new Error('Failed to save global onboarding status');
+        }
+      } catch (verifyErr) {
+        console.error('Error verifying onboarding status:', verifyErr);
+        // Try one more time to save
+        await markOnboardingComplete(userId);
+      }
+      
+      // Add a small delay to ensure the loading indicator is visible
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       // Navigate to the protected index screen
-      router.replace('/');
+      console.log('Onboarding completed successfully, navigating to main app');
+      router.replace('/(protected)');
     } catch (err) {
       console.error('Onboarding error:', err);
-      // Still try to navigate even if there was an error saving the onboarding status
-      router.replace('/');
+      setNavigating(false);
+      Alert.alert(
+        'Error',
+        'Failed to complete onboarding. Do you want to try again?',
+        [
+          {
+            text: 'Try Again',
+            onPress: () => handleContinue(),
+            style: 'default'
+          },
+          {
+            text: 'Continue Anyway',
+            onPress: () => router.replace('/(protected)'),
+            style: 'destructive'
+          }
+        ]
+      );
     } finally {
       setLoading(false);
     }
@@ -112,15 +282,30 @@ export default function OnboardingScreen() {
   
   const handleSkip = async () => {
     try {
-      // Mark onboarding as completed even if user skips
-      await markOnboardingComplete();
+      // Show loading indicator
+      setNavigating(true);
+      
+      // Get the user ID to ensure it's properly saved
+      const userId = user?.id;
+      console.log('Skipping onboarding for user:', userId);
+      
+      if (!userId) {
+        console.warn('No user ID available when skipping onboarding. Using global flag only.');
+      }
+      
+      // Mark onboarding as completed even if user skips, with user ID
+      await markOnboardingComplete(userId);
+      
+      // Add a small delay to ensure the loading indicator is visible
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       // Navigate to home without completing onboarding
-      router.replace('/');
+      console.log('Onboarding skipped, navigating to main app');
+      router.replace('/(protected)');
     } catch (err) {
       console.error('Onboarding skip error:', err);
       // Still try to navigate even if there was an error saving the onboarding status
-      router.replace('/');
+      router.replace('/(protected)');
     }
   };
 
@@ -130,6 +315,27 @@ export default function OnboardingScreen() {
     
     if (currentIndex !== step) {
       setStep(currentIndex);
+    }
+  };
+  
+  // Navigate to next screen
+  const handleNextScreen = () => {
+    if (step < onboardingData.length) {
+      const nextStep = step + 1;
+      setStep(nextStep);
+      flatListRef.current?.scrollToIndex({ index: nextStep - 1, animated: true });
+    } else if (step === onboardingData.length) {
+      // If on last screen, call the continue function
+      handleContinue();
+    }
+  };
+  
+  // Navigate to previous screen
+  const handlePreviousScreen = () => {
+    if (step > 1) {
+      const prevStep = step - 1;
+      setStep(prevStep);
+      flatListRef.current?.scrollToIndex({ index: prevStep - 1, animated: true });
     }
   };
 
@@ -169,6 +375,11 @@ export default function OnboardingScreen() {
     );
   };
 
+  // If navigating, show a full screen loading overlay
+  if (navigating) {
+    return <LoadingScreen message="Getting your app ready..." />;
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: getCurrentBackgroundColor() }]}>
       <View style={styles.progressContainer}>
@@ -176,6 +387,30 @@ export default function OnboardingScreen() {
         <View style={[styles.progressIndicator, step >= 2 ? styles.activeProgress : {}]} />
         <View style={[styles.progressIndicator, step >= 3 ? styles.activeProgress : {}]} />
       </View>
+      
+      {/* Navigation hint that fades away */}
+      {showHint && (
+        <View style={styles.navigationHint}>
+          <Text style={styles.navigationHintText}>
+            Swipe to navigate
+          </Text>
+        </View>
+      )}
+      
+      {/* Touch area for previous screen */}
+      <TouchableOpacity
+        style={styles.leftTouchArea}
+        activeOpacity={0.6}
+        onPress={handlePreviousScreen}
+        disabled={step === 1} // Disable on first screen
+      />
+      
+      {/* Touch area for next screen */}
+      <TouchableOpacity
+        style={styles.rightTouchArea}
+        activeOpacity={0.6}
+        onPress={handleNextScreen}
+      />
       
       <FlatList
         ref={flatListRef}
@@ -192,6 +427,7 @@ export default function OnboardingScreen() {
           offset: width * index,
           index,
         })}
+        scrollEnabled={true} // Keep swipe functionality
       />
     </View>
   );
@@ -235,7 +471,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 4,
+    marginTop: 32,
   },
   onboardingImage: {
     // Base styles - will be overridden by inline styles
@@ -264,4 +500,46 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
   },
-}) as StylesProps; 
+  leftTouchArea: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 60,
+    height: '100%',
+    zIndex: 5, // Above the FlatList but below progress indicators
+  },
+  rightTouchArea: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: 60,
+    height: '100%',
+    zIndex: 5, // Above the FlatList but below progress indicators
+  },
+  navigationHint: {
+    position: 'absolute',
+    top: 80, // Below the progress indicators
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    zIndex: 6,
+  },
+  navigationHintText: {
+    color: 'white',
+    ...Fonts.regular,
+    fontSize: 14,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+}) as unknown as StylesProps; 
